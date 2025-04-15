@@ -46,6 +46,9 @@ export function Navbar() {
             <Link href="/careers" className="text-foreground/60 hover:text-foreground text-lg">
               Careers
             </Link>
+            <Link href="/blog" className="text-foreground/60 hover:text-foreground text-lg">
+              Blog
+            </Link>
             <Button
               variant="ghost"
               size="icon"
@@ -111,6 +114,13 @@ export function Navbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Careers
+            </Link>
+            <Link
+              href="/blog"
+              className="block px-3 py-2 text-foreground/60 hover:text-foreground"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Blog
             </Link>
           </div>
         </div>
