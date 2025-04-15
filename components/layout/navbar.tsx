@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Moon, Sun, Menu, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
@@ -13,29 +14,36 @@ export function Navbar() {
   return (
     <nav className="fixed w-full z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg mr-3"></div>
-            <Link href="/" className="text-xl font-bold">
-              SKAPL
-            </Link>
-          </div>
+        <div className="flex justify-between h-24 items-center">
+          <Link href="/" className="flex items-center">
+            <div className="relative w-32 h-32 -my-4">
+              <Image
+                src="/logo.png"
+                alt="SKAPL Logo"
+                fill
+                className="object-contain p-1"
+                priority
+                sizes="(max-width: 768px) 80px, 128px"
+                quality={100}
+              />
+            </div>
+          </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link href="/" className="text-foreground/60 hover:text-foreground">
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-foreground/60 hover:text-foreground text-lg">
               Home
             </Link>
-            <Link href="/services" className="text-foreground/60 hover:text-foreground">
+            <Link href="/services" className="text-foreground/60 hover:text-foreground text-lg">
               Services
             </Link>
-            <Link href="/about" className="text-foreground/60 hover:text-foreground">
+            <Link href="/about" className="text-foreground/60 hover:text-foreground text-lg">
               About
             </Link>
-            <Link href="/contact" className="text-foreground/60 hover:text-foreground">
+            <Link href="/contact" className="text-foreground/60 hover:text-foreground text-lg">
               Contact
             </Link>
-            <Link href="/careers" className="text-foreground/60 hover:text-foreground">
+            <Link href="/careers" className="text-foreground/60 hover:text-foreground text-lg">
               Careers
             </Link>
             <Button
