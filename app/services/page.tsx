@@ -8,7 +8,7 @@ export default function ServicesPage() {
       {/* Hero Section */}
       <section className="relative h-[50vh] flex items-center">
         <Image
-          src="https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&q=80"
+          src="https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Modern Infrastructure"
           fill
           className="object-cover brightness-50"

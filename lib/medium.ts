@@ -17,7 +17,7 @@ let parser: Parser = new Parser({
 
 export async function getMediumPosts(): Promise<MediumPost[]> {
   try {
-    const feed = await parser.parseURL('https://medium.com/feed/@thevishrutkumar');
+    const feed = await parser.parseURL('https://medium.com/feed/@techinfra');
     return feed.items.map(item => ({
       title: item.title || '',
       link: item.link || '',

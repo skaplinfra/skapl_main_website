@@ -24,10 +24,27 @@ type FormData = z.infer<typeof formSchema>;
 
 const positions = [
   'Software Engineer',
+  'Senior Cloud Architect',
+  'Site Reliability Engineer (Devops)',
+  'DevOps Engineer',
   'Project Manager',
   'Solar Energy Consultant',
   'Business Analyst',
   'Operations Manager',
+  'Sales Manager',
+  'Marketing Manager',
+  'HR Manager',
+  'Customer Support',
+  'Data Analyst',
+  'Content Writer',
+  'Intern - SDE',
+  'Intern - Sales & Marketing',
+  'Intern - Finance',
+  'Intern - Operations',
+  'Intern - Business Development',
+  'Intern - Customer Success',
+  
+  
 ];
 
 export default function CareersPage() {
@@ -83,14 +100,14 @@ export default function CareersPage() {
         throw uploadError;
       }
 
-      console.log('File uploaded successfully:', fileData);
+      console.log('File uploaded successfully:');
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('resumes')
         .getPublicUrl(fileName);
 
-      console.log('Generated public URL:', publicUrl);
+      //console.log('Generated public URL:', publicUrl);
 
       // Submit application data
       const applicationData = {
@@ -99,7 +116,7 @@ export default function CareersPage() {
         submitted_at: new Date().toISOString(),
       };
 
-      console.log('Submitting application data:', applicationData);
+      //console.log('Submitting application data:', applicationData);
       
       const { error: submitError, data: submittedData } = await supabase
         .from('career_applications')
@@ -117,16 +134,25 @@ export default function CareersPage() {
         throw submitError;
       }
 
-      console.log('Application submitted successfully:', submittedData);
-      toast.success('Application submitted successfully!');
+      toast.success('Application received! We\'ll reach out to you soon.', {
+        duration: 5000,
+        style: {
+          background: 'var(--primary)',
+          color: 'var(--primary-foreground)',
+        },
+      });
       reset();
       setSelectedFile(null);
     } catch (error) {
       console.error('Full error details:', error);
       if (error instanceof Error) {
-        toast.error(`Failed to submit application: ${error.message}`);
+        toast.error(`Failed to submit application: ${error.message}`, {
+          duration: 5000,
+        });
       } else {
-        toast.error('Failed to submit application. Please try again.');
+        toast.error('Failed to submit application. Please try again.', {
+          duration: 5000,
+        });
       }
     } finally {
       setIsSubmitting(false);
@@ -206,16 +232,32 @@ export default function CareersPage() {
               )}
             </div>
 
-            <div>
-              <Input
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Upload Resume (PDF, DOC, DOCX - Max 5MB)
+              </label>
+              <div className="flex items-center gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('resume-upload')?.click()}
+                  className="w-[200px]"
+                >
+                  {selectedFile ? 'Change File' : 'Choose File'}
+                </Button>
+                {selectedFile && (
+                  <span className="text-sm text-muted-foreground">
+                    {selectedFile.name}
+                  </span>
+                )}
+              </div>
+              <input
+                id="resume-upload"
                 type="file"
                 accept=".pdf,.doc,.docx"
                 onChange={handleFileChange}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                className="hidden"
               />
-              <p className="text-sm text-muted-foreground mt-1">
-                Upload your resume (PDF, DOC, DOCX - Max 5MB)
-              </p>
             </div>
 
             <div>
