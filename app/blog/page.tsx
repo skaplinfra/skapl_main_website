@@ -1,72 +1,74 @@
-import Link from 'next/link';
 import Image from 'next/image';
-import { Card } from '@/components/ui/card';
+import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
-import { getMediumPosts } from '@/lib/medium';
 
-export default async function BlogPage() {
-  const posts = await getMediumPosts();
+// Use the same blog posts data
+const blogPosts = [
+  {
+    id: 1,
+    title: "The Future of Solar Energy in India",
+    slug: "future-of-solar-energy-india",
+    content: `India's solar energy sector is witnessing unprecedented growth...`,
+    coverImage: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600&h=900&fit=crop",
+    date: "2024-03-15",
+    author: "Sanjib Kumar",
+    authorRole: "Founder & Managing Director",
+    category: "Renewable Energy"
+  },
+  {
+    id: 2,
+    title: "Digital Transformation in Energy Management",
+    slug: "digital-transformation-energy-management",
+    content: `The integration of digital technologies in energy management...`,
+    coverImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&h=900&fit=crop",
+    date: "2024-03-10",
+    author: "Vishrut Kumar",
+    authorRole: "Chief Technology Officer",
+    category: "Technology"
+  }
+];
 
+export default function BlogPage() {
   return (
     <div className="min-h-screen bg-background py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold mb-4">SKAPL Blog</h1>
-          <p className="text-xl text-muted-foreground">
-            Insights and updates from our CTO on technology, innovation, and industry trends
-          </p>
-        </div>
-
-        {/* Blog Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post) => {
-            const slug = post.guid.split('/').pop() || '';
-            const coverImage = post.content.match(/<img[^>]+src="([^">]+)"/)?.[1] || 
-              'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80';
-            
-            // Extract excerpt from content
-            const excerpt = post.content
-              .replace(/<[^>]+>/g, '') // Remove HTML tags
-              .slice(0, 150) // Get first 150 characters
-              .trim() + '...';
-
-            return (
-              <Link key={post.guid} href={`/blog/${slug}`}>
-                <Card className="overflow-hidden h-full hover:shadow-lg transition-shadow duration-300">
-                  <div className="relative h-48">
-                    <Image
-                      src={coverImage}
-                      alt={post.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-4 mb-3">
-                      {post.categories.slice(0, 1).map((category, index) => (
-                        <span key={index} className="text-sm text-primary font-medium">
-                          {category}
-                        </span>
-                      ))}
-                      <span className="text-sm text-muted-foreground">
-                        {formatDate(post.pubDate)}
-                      </span>
-                    </div>
-                    <h2 className="text-xl font-semibold mb-2 line-clamp-2">
-                      {post.title}
-                    </h2>
-                    <p className="text-muted-foreground line-clamp-3 mb-4">
-                      {excerpt}
-                    </p>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <span>By Vishrut Kumar</span>
-                    </div>
-                  </div>
-                </Card>
+      <div className="max-w-4xl mx-auto px-4">
+        <h1 className="text-4xl font-bold mb-12">Blog</h1>
+        
+        <div className="grid gap-12">
+          {blogPosts.map((post) => (
+            <article key={post.id} className="grid md:grid-cols-2 gap-8">
+              <Link href={`/blog/${post.slug}`} className="relative h-64 rounded-lg overflow-hidden">
+                <Image
+                  src={post.coverImage}
+                  alt={post.title}
+                  fill
+                  className="object-cover transition-transform hover:scale-105"
+                />
               </Link>
-            );
-          })}
+              
+              <div className="flex flex-col">
+                <div className="flex-1">
+                  <Link 
+                    href={`/blog/${post.slug}`}
+                    className="inline-block hover:text-primary transition-colors"
+                  >
+                    <h2 className="text-2xl font-bold mb-4">{post.title}</h2>
+                  </Link>
+                  <p className="text-muted-foreground mb-4">
+                    {post.content.substring(0, 150)}...
+                  </p>
+                </div>
+                
+                <div className="text-sm text-muted-foreground">
+                  <span>{post.author}</span>
+                  <span className="mx-2">•</span>
+                  <span>{formatDate(post.date)}</span>
+                  <span className="mx-2">•</span>
+                  <span>{post.category}</span>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
     </div>
