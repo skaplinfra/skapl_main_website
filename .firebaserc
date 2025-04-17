@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "skapl-ea94c"
+  },
+  "targets": {
+    "skapl-ea94c": {
+      "hosting": {
+        "production": [
+          "skapl-ea94c"
+        ],
+        "demo": [
+          "skapl-demo"
+        ]
+      }
+    }
+  }
+} 
