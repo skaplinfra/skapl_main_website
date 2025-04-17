@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "skapl-ea94c"
+    "default": "skapl-demo"
   },
   "targets": {
     "skapl-ea94c": {
