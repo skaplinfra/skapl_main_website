@@ -10,38 +10,66 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { Turnstile } from '@/components/ui/turnstile';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   phone: z.string().optional(),
   message: z.string().min(10, 'Message must be at least 10 characters'),
+  turnstileToken: z.string().min(1, 'Please complete the security check'),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
+      // Verify the turnstile token server-side
+      const verifyResponse = await fetch('/api/verify-turnstile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          token: data.turnstileToken,
+          formType: 'contact'
+        }),
+      });
+
+      const verifyData = await verifyResponse.json();
+      if (!verifyData.success) {
+        throw new Error('Security check failed. Please try again.');
+      }
+
       const { error } = await supabase
         .from('contact_forms')
-        .insert([data]);
+        .insert([{
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          message: data.message,
+        }]);
 
       if (error) throw error;
 
       toast.success('Message sent successfully!');
       reset();
     } catch (error) {
-      toast.error('Failed to send message. Please try again.');
+      toast.error(error instanceof Error ? error.message : 'Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleTurnstileVerify = (token: string) => {
+    setValue('turnstileToken', token);
   };
 
   return (
@@ -95,6 +123,16 @@ export default function ContactPage() {
                     <p className="text-sm text-destructive mt-1">{errors.message.message}</p>
                   )}
                 </div>
+
+                <div className="flex justify-center">
+                  <Turnstile
+                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY || ''}
+                    onVerify={handleTurnstileVerify}
+                  />
+                </div>
+                {errors.turnstileToken && (
+                  <p className="text-sm text-destructive text-center mt-1">{errors.turnstileToken.message}</p>
+                )}
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? 'Sending...' : 'Send Message'}

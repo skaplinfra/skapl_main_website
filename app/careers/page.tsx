@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { Turnstile } from '@/components/ui/turnstile';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -18,6 +19,7 @@ const formSchema = z.object({
   phone: z.string().optional(),
   position_applied: z.string().min(1, 'Please select a position'),
   cover_letter: z.string().optional(),
+  turnstileToken: z.string().min(1, 'Please complete the security check'),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -62,6 +64,23 @@ export default function CareersPage() {
 
     setIsSubmitting(true);
     try {
+      // Verify the turnstile token server-side
+      const verifyResponse = await fetch('/api/verify-turnstile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          token: data.turnstileToken,
+          formType: 'career'
+        }),
+      });
+
+      const verifyData = await verifyResponse.json();
+      if (!verifyData.success) {
+        throw new Error('Security check failed. Please try again.');
+      }
+
       // Log the file details
       console.log('File details:', {
         name: selectedFile.name,
@@ -267,6 +286,16 @@ export default function CareersPage() {
                 rows={5}
               />
             </div>
+
+            <div className="flex justify-center">
+              <Turnstile
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY || ''}
+                onVerify={(token) => setValue('turnstileToken', token)}
+              />
+            </div>
+            {errors.turnstileToken && (
+              <p className="text-sm text-destructive text-center mt-1">{errors.turnstileToken.message}</p>
+            )}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Submit Application'}
