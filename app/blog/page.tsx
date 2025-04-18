@@ -1,75 +1,70 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { formatDate } from '@/lib/utils';
+import { format } from 'date-fns';
+import { Card } from '@/components/ui/card';
+import { getMediumPosts } from '@/lib/medium';
 
-// Use the same blog posts data
-const blogPosts = [
-  {
-    id: 1,
-    title: "The Future of Solar Energy in India",
-    slug: "future-of-solar-energy-india",
-    content: `India's solar energy sector is witnessing unprecedented growth...`,
-    coverImage: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600&h=900&fit=crop",
-    date: "2024-03-15",
-    author: "Sanjib Kumar",
-    authorRole: "Founder & Managing Director",
-    category: "Renewable Energy"
-  },
-  {
-    id: 2,
-    title: "Digital Transformation in Energy Management",
-    slug: "digital-transformation-energy-management",
-    content: `The integration of digital technologies in energy management...`,
-    coverImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&h=900&fit=crop",
-    date: "2024-03-10",
-    author: "Vishrut Kumar",
-    authorRole: "Chief Technology Officer",
-    category: "Technology"
-  }
-];
+export const revalidate = 3600; // Revalidate every hour
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const posts = await getMediumPosts();
+
   return (
     <div className="min-h-screen bg-background py-24">
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-4xl font-bold mb-12">Blog</h1>
-        
-        <div className="grid gap-12">
-          {blogPosts.map((post) => (
-            <article key={post.id} className="grid md:grid-cols-2 gap-8">
-              <Link href={`/blog/${post.slug}`} className="relative h-64 rounded-lg overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-bold mb-4">Our Blog</h1>
+          <p className="text-xl text-muted-foreground">
+            Insights, updates, and stories from the SKAPL team
+          </p>
+        </div>
+
+        {/* Blog Posts Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {posts.map((post) => (
+            <Card key={post.link} className="overflow-hidden flex flex-col">
+              <div className="relative h-48">
                 <Image
-                  src={post.coverImage}
+                  src={post.thumbnail}
                   alt={post.title}
                   fill
-                  className="object-cover transition-transform hover:scale-105"
+                  className="object-cover"
+                  unoptimized // Since we're using external images
                 />
-              </Link>
-              
-              <div className="flex flex-col">
-                <div className="flex-1">
-                  <Link 
-                    href={`/blog/${post.slug}`}
-                    className="inline-block hover:text-primary transition-colors"
-                  >
-                    <h2 className="text-2xl font-bold mb-4">{post.title}</h2>
-                  </Link>
-                  <p className="text-muted-foreground mb-4">
-                    {post.content.substring(0, 150)}...
-                  </p>
-                </div>
-                
-                <div className="text-sm text-muted-foreground">
+              </div>
+              <div className="p-6 flex-1 flex flex-col">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                  <span>{format(new Date(post.pubDate), 'MMM d, yyyy')}</span>
+                  <span>•</span>
                   <span>{post.author}</span>
-                  <span className="mx-2">•</span>
-                  <span>{formatDate(post.date)}</span>
-                  <span className="mx-2">•</span>
-                  <span>{post.category}</span>
+                </div>
+                <h2 className="text-xl font-semibold mb-3 line-clamp-2">
+                  {post.title}
+                </h2>
+                <p className="text-muted-foreground mb-6 line-clamp-3">
+                  {post.content}
+                </p>
+                <div className="mt-auto">
+                  <Link 
+                    href={post.link}
+                    target="_blank"
+                    rel="noopener noreferrer" 
+                    className="text-primary hover:text-primary/80 font-medium"
+                  >
+                    Read More →
+                  </Link>
                 </div>
               </div>
-            </article>
+            </Card>
           ))}
         </div>
+
+        {posts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No blog posts found.</p>
+          </div>
+        )}
       </div>
     </div>
   );

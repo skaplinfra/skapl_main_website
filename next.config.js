@@ -6,7 +6,9 @@ const nextConfig = {
   images: {
     domains: [
       'images.unsplash.com',
-      'media.licdn.com'
+      'media.licdn.com',
+      'cdn-images-1.medium.com',
+      'miro.medium.com'
     ],
   },
 };
