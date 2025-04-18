@@ -10,10 +10,9 @@ const nextConfig = {
       'cdn-images-1.medium.com',
       'miro.medium.com'
     ],
+    unoptimized: true,
   },
-  output: 'export',
-  // This ensures static assets are copied to the correct location for Firebase Hosting
-  distDir: '.firebase/demo/hosting',
+  // Remove the output and distDir configurations as they're not needed for SSR
 };
 
 module.exports = nextConfig;
