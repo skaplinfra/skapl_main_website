@@ -43,6 +43,7 @@ jobs:
           projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'
           channelId: demo
           expires: 7d
+          force: true
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
           FIREBASE_FUNCTIONS_REGION: asia-south1 

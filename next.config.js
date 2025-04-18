@@ -12,7 +12,9 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
-  // Remove the output and distDir configurations as they're not needed for SSR
+  experimental: {
+    serverActions: true
+  }
 };
 
 module.exports = nextConfig;
