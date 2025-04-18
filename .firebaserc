@@ -1,15 +1,15 @@
 {
   "projects": {
-    "default": "skapl-demo"
+    "default": "${FIREBASE_PROJECT_ID}"
   },
   "targets": {
-    "skapl-ea94c": {
+    "${FIREBASE_PROJECT_ID}": {
       "hosting": {
-        "production": [
-          "skapl-ea94c"
-        ],
         "demo": [
           "skapl-demo"
+        ],
+        "prod": [
+          "skapl-prod"
         ]
       }
     }

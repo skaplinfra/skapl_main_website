@@ -13,15 +13,6 @@
   "functions": {
     "source": ".",
     "runtime": "nodejs20",
-    "region": "asia-south1",
-    "force": true,
-    "artifactRegistry": {
-      "location": "asia-south1",
-      "repository": "gcf-artifacts",
-      "cleanupPolicy": {
-        "keepDays": 14,
-        "keepVersionCount": 2
-      }
-    }
+    "region": "asia-south1"
   }
 } 
