@@ -23,15 +23,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create .env.local
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env.local
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.local
+          echo "NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY }}" >> .env.local
+          echo "NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY }}" >> .env.local
+          echo "TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}" >> .env.local
+          echo "TURNSTILE_CAREER_SECRET_KEY=${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}" >> .env.local
+
       - name: Build
         run: npm run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY }}
-          NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY }}
-          TURNSTILE_CONTACT_SECRET_KEY: ${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}
-          TURNSTILE_CAREER_SECRET_KEY: ${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
