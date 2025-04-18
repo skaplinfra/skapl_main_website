@@ -9,5 +9,18 @@
     "frameworksBackend": {
       "region": "asia-south1"
     }
+  },
+  "functions": {
+    "source": ".",
+    "runtime": "nodejs20",
+    "region": "asia-south1",
+    "artifactRegistry": {
+      "location": "asia-south1",
+      "repository": "gcf-artifacts",
+      "cleanupPolicy": {
+        "keepDays": 14,
+        "keepVersionCount": 2
+      }
+    }
   }
 } 
