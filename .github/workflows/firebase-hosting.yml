@@ -41,8 +41,4 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'
-          channelId: demo
-          target: demo
-        env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks
-          FIREBASE_FUNCTIONS_REGION: asia-south1 
+          channelId: 'live' 
