@@ -1,5 +1,8 @@
+'use client';
+
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
+import { useTheme } from 'next-themes';
 
 interface TurnstileProps {
   siteKey: string;
@@ -27,7 +30,7 @@ declare global {
 export function Turnstile({ siteKey, onVerify }: TurnstileProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string>();
-  const isDark = document.documentElement.classList.contains('dark');
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -46,7 +49,7 @@ export function Turnstile({ siteKey, onVerify }: TurnstileProps) {
           widgetIdRef.current = window.turnstile.render(container, {
             sitekey: siteKey,
             callback: onVerify,
-            theme: isDark ? 'dark' : 'light',
+            theme: theme === 'dark' ? 'dark' : 'light',
           });
         } catch (error) {
           console.error('Turnstile render error:', error);
@@ -65,7 +68,7 @@ export function Turnstile({ siteKey, onVerify }: TurnstileProps) {
         }
       }
     };
-  }, [siteKey, onVerify, isDark]);
+  }, [siteKey, onVerify, theme]);
 
   return (
     <>
