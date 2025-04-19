@@ -1,0 +1,46 @@
+name: Deploy to Firebase Production
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env.local for build
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.PROD_NEXT_PUBLIC_SUPABASE_URL }}" >> .env.local
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.PROD_NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.local
+          echo "NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY=${{ secrets.PROD_TURNSTILE_CONTACT_SITE_KEY }}" >> .env.local
+          echo "NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY=${{ secrets.PROD_TURNSTILE_CAREER_SITE_KEY }}" >> .env.local
+          echo "TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.PROD_TURNSTILE_CONTACT_SECRET_KEY }}" >> .env.local
+          echo "TURNSTILE_CAREER_SECRET_KEY=${{ secrets.PROD_TURNSTILE_CAREER_SECRET_KEY }}" >> .env.local
+          echo "NEXT_PUBLIC_STATIC_EXPORT=true" >> .env.local
+
+      - name: Build static site
+        run: npm run build
+
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD }}'
+          projectId: 'skapl-prod'
+          channelId: 'live'
+          target: prod 

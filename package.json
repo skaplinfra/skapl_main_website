@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "firebase:login": "firebase login",
+    "firebase:deploy:demo": "firebase deploy --only hosting:demo",
+    "firebase:deploy:prod": "firebase deploy --only hosting:prod",
+    "deploy:demo": "next build && firebase deploy --only hosting:demo",
+    "deploy:prod": "next build && firebase deploy --only hosting:prod"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

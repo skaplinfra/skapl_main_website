@@ -142,4 +142,53 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 SKAPL - [contact@skapl.com](mailto:contact@skapl.com)
 
-Project Link: [https://github.com/yourusername/skapl_main_website](https://github.com/yourusername/skapl_main_website) 
+Project Link: [https://github.com/yourusername/skapl_main_website](https://github.com/yourusername/skapl_main_website)
+
+## Deployment
+
+### Firebase Hosting
+
+This project is configured for deployment to Firebase Hosting with two environments:
+
+- **Demo** (demo branch): [https://skapl-demo.web.app](https://skapl-demo.web.app)
+- **Production** (main branch): [https://skapl-prod.web.app](https://skapl-prod.web.app)
+
+#### Manual Deployment
+
+To deploy manually:
+
+```bash
+# For demo environment
+npm run deploy:demo
+
+# For production environment
+npm run deploy:prod
+```
+
+#### GitHub Actions Automated Deployment
+
+This repository is configured with GitHub Actions workflows that automatically deploy:
+- Push to `demo` branch → Demo environment
+- Push to `main` branch → Production environment
+
+#### Required GitHub Secrets
+
+For GitHub Actions to work properly, configure these repository secrets:
+
+**Demo environment:**
+- `DEMO_NEXT_PUBLIC_SUPABASE_URL`
+- `DEMO_NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `DEMO_TURNSTILE_CONTACT_SITE_KEY`
+- `DEMO_TURNSTILE_CAREER_SITE_KEY`
+- `DEMO_TURNSTILE_CONTACT_SECRET_KEY`
+- `DEMO_TURNSTILE_CAREER_SECRET_KEY`
+- `FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO` (Firebase service account JSON)
+
+**Production environment:**
+- `PROD_NEXT_PUBLIC_SUPABASE_URL`
+- `PROD_NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `PROD_TURNSTILE_CONTACT_SITE_KEY`
+- `PROD_TURNSTILE_CAREER_SITE_KEY`
+- `PROD_TURNSTILE_CONTACT_SECRET_KEY`
+- `PROD_TURNSTILE_CAREER_SECRET_KEY`
+- `FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD` (Firebase service account JSON) 

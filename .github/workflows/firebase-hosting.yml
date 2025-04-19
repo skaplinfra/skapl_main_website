@@ -1,4 +1,4 @@
-name: Deploy to Firebase Hosting
+name: Deploy to Firebase Demo
 
 on:
   push:
@@ -25,12 +25,13 @@ jobs:
 
       - name: Create .env.local for build
         run: |
-          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env.local
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.local
-          echo "NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY }}" >> .env.local
-          echo "NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY }}" >> .env.local
-          echo "TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}" >> .env.local
-          echo "TURNSTILE_CAREER_SECRET_KEY=${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}" >> .env.local
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.DEMO_NEXT_PUBLIC_SUPABASE_URL }}" >> .env.local
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.DEMO_NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.local
+          echo "NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY=${{ secrets.DEMO_TURNSTILE_CONTACT_SITE_KEY }}" >> .env.local
+          echo "NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY=${{ secrets.DEMO_TURNSTILE_CAREER_SITE_KEY }}" >> .env.local
+          echo "TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.DEMO_TURNSTILE_CONTACT_SECRET_KEY }}" >> .env.local
+          echo "TURNSTILE_CAREER_SECRET_KEY=${{ secrets.DEMO_TURNSTILE_CAREER_SECRET_KEY }}" >> .env.local
+          echo "NEXT_PUBLIC_STATIC_EXPORT=true" >> .env.local
 
       - name: Build static site
         run: npm run build
@@ -41,4 +42,5 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO }}'
           projectId: 'skapl-demo'
-          channelId: 'demo' 
+          channelId: 'live'
+          target: demo
