@@ -17,12 +17,6 @@ const nextConfig = {
   trailingSlash: false,
   env: {
     NEXT_PUBLIC_STATIC_EXPORT: 'true'
-  },
-  // Copy the 404.html file
-  exportPathMap: async function (defaultPathMap) {
-    return {
-      ...defaultPathMap,
-    };
   }
 };
 
