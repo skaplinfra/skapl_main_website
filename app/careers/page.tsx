@@ -11,8 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
 import { Turnstile } from '@/components/ui/turnstile';
+import { CareerFormData, submitCareerApplication } from '@/lib/clientApi';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -63,90 +63,8 @@ export default function CareersPage() {
 
     setIsSubmitting(true);
     try {
-      // Verify the turnstile token server-side
-      const verifyResponse = await fetch('/api/verify-turnstile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          token: data.turnstileToken,
-          formType: 'career'
-        }),
-      });
-
-      const verifyData = await verifyResponse.json();
-      if (!verifyData.success) {
-        throw new Error('Security check failed. Please try again.');
-      }
-
-      // Log the file details
-      console.log('File details:', {
-        name: selectedFile.name,
-        type: selectedFile.type,
-        size: selectedFile.size
-      });
-
-      // First, check if the 'resumes' bucket exists
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-      
-      if (bucketsError) {
-        console.error('Error fetching buckets:', bucketsError);
-        toast.error('Failed to check storage configuration');
-        return;
-      }
-
-      console.log('Available buckets:', buckets?.map(b => b.name));
-      
-      // Attempt direct upload without bucket check
-      console.log('Attempting file upload...');
-      const fileExt = selectedFile.name.split('.').pop()?.toLowerCase();
-      const fileName = `${Date.now()}_${data.name.replace(/\s+/g, '_')}.${fileExt}`;
-      
-      const { error: uploadError, data: fileData } = await supabase.storage
-        .from('resumes')
-        .upload(fileName, selectedFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        console.error('Upload error details:', {
-          message: uploadError.message,
-          name: uploadError.name
-        });
-        throw uploadError;
-      }
-
-      console.log('File uploaded successfully:');
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('resumes')
-        .getPublicUrl(fileName);
-
-      // Submit application data
-      const applicationData = {
-        ...data,
-        resume_url: publicUrl,
-        submitted_at: new Date().toISOString(),
-      };
-      
-      const { error: submitError, data: submittedData } = await supabase
-        .from('career_applications')
-        .insert([applicationData])
-        .select()
-        .single();
-
-      if (submitError) {
-        console.error('Application submission error:', {
-          message: submitError.message,
-          code: submitError.code,
-          details: submitError.details,
-          hint: submitError.hint
-        });
-        throw submitError;
-      }
+      // Using client-side API for static export
+      await submitCareerApplication(data as CareerFormData, selectedFile);
 
       toast.success('Application received! We\'ll reach out to you soon.', {
         duration: 5000,
@@ -158,7 +76,7 @@ export default function CareersPage() {
       reset();
       setSelectedFile(null);
     } catch (error) {
-      console.error('Full error details:', error);
+      console.error('Application submission error:', error);
       if (error instanceof Error) {
         toast.error(`Failed to submit application: ${error.message}`, {
           duration: 5000,

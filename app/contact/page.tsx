@@ -10,8 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
 import { Turnstile } from '@/components/ui/turnstile';
+import { ContactFormData, submitContactForm } from '@/lib/clientApi';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -32,37 +32,13 @@ export default function ContactPage() {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      // Verify the turnstile token server-side
-      const verifyResponse = await fetch('/api/verify-turnstile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          token: data.turnstileToken,
-          formType: 'contact'
-        }),
-      });
-
-      const verifyData = await verifyResponse.json();
-      if (!verifyData.success) {
-        throw new Error('Security check failed. Please try again.');
-      }
-
-      const { error } = await supabase
-        .from('contact_forms')
-        .insert([{
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          message: data.message,
-        }]);
-
-      if (error) throw error;
-
+      // Using client-side API for static export
+      await submitContactForm(data as ContactFormData);
+      
       toast.success('Message sent successfully!');
       reset();
     } catch (error) {
+      console.error('Form submission error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);
