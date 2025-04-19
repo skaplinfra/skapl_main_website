@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -41,7 +41,4 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO }}'
           projectId: 'skapl-demo'
-          channelId: 'demo'
-          site: 'skapl-demo'
-        env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks 
+          channelId: 'demo' 
