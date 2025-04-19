@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "${FIREBASE_PROJECT_ID}"
+    "default": "skapl-demo"
   },
   "targets": {
     "${FIREBASE_PROJECT_ID}": {
