@@ -1,14 +1,10 @@
 {
   "hosting": {
-    "site": "skapl-demo",
-    "source": ".",
+    "public": ".next",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ],
-    "frameworksBackend": {
-      "region": "asia-south1"
-    }
+    ]
   }
 } 
