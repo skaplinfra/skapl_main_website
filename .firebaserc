@@ -1,17 +1,5 @@
 {
   "projects": {
     "default": "skapl-demo"
-  },
-  "targets": {
-    "${FIREBASE_PROJECT_ID}": {
-      "hosting": {
-        "demo": [
-          "skapl-demo"
-        ],
-        "prod": [
-          "skapl-prod"
-        ]
-      }
-    }
   }
 } 
