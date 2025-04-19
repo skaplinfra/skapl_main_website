@@ -1,3 +1,4 @@
+// Static version of the careers page for Firebase hosting
 'use client';
 
 import { useState } from 'react';
@@ -45,8 +46,6 @@ const positions = [
   'Intern - Operations',
   'Intern - Business Development',
   'Intern - Customer Success',
-  
-  
 ];
 
 export default function CareersPage() {
@@ -126,16 +125,12 @@ export default function CareersPage() {
         .from('resumes')
         .getPublicUrl(fileName);
 
-      //console.log('Generated public URL:', publicUrl);
-
       // Submit application data
       const applicationData = {
         ...data,
         resume_url: publicUrl,
         submitted_at: new Date().toISOString(),
       };
-
-      //console.log('Submitting application data:', applicationData);
       
       const { error: submitError, data: submittedData } = await supabase
         .from('career_applications')

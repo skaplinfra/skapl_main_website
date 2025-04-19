@@ -1,3 +1,4 @@
+// Static version of the contact page for Firebase hosting
 'use client';
 
 import { useState } from 'react';
