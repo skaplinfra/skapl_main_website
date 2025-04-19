@@ -202,6 +202,7 @@ export default function CareersPage() {
 
             <div className="flex justify-center">
               <Turnstile
+                id="career-form-turnstile"
                 siteKey={process.env.NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY || ''}
                 onVerify={(token) => setValue('turnstileToken', token)}
               />

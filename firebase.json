@@ -1,7 +1,6 @@
 {
   "hosting": {
     "public": "out",
-    "site": "skapl-demo",
     "ignore": [
       "firebase.json",
       "**/.*",

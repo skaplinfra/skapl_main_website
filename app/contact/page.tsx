@@ -103,6 +103,7 @@ export default function ContactPage() {
 
                 <div className="flex justify-center">
                   <Turnstile
+                    id="contact-form-turnstile"
                     siteKey={process.env.NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY || ''}
                     onVerify={handleTurnstileVerify}
                   />
