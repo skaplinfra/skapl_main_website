@@ -1,6 +1,6 @@
 {
-  "hosting": [{
-    "target": "demo",
+  "hosting": {
+    "site": "skapl-demo",
     "source": ".",
     "ignore": [
       "firebase.json",
@@ -10,5 +10,5 @@
     "frameworksBackend": {
       "region": "asia-south1"
     }
-  }]
+  }
 } 
