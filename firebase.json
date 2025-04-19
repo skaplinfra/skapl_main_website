@@ -1,5 +1,6 @@
 {
-  "hosting": {
+  "hosting": [{
+    "target": "demo",
     "source": ".",
     "ignore": [
       "firebase.json",
@@ -9,5 +10,5 @@
     "frameworksBackend": {
       "region": "asia-south1"
     }
-  }
+  }]
 } 
