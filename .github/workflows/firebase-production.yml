@@ -41,7 +41,7 @@ jobs:
           cd functions
           npm install
 
-      - name: Deploy to Firebase
+      - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -50,12 +50,18 @@ jobs:
           channelId: 'live'
           target: prod
 
-      - name: Set Firebase Functions config
+      - name: Set up Firebase CLI with service account
         run: |
           npm install -g firebase-tools
-          firebase functions:config:set turnstile.contact_secret="${{ secrets.PROD_TURNSTILE_CONTACT_SECRET_KEY }}" --token "${{ secrets.FIREBASE_TOKEN }}" --project skapl-prod
-          firebase functions:config:set turnstile.career_secret="${{ secrets.PROD_TURNSTILE_CAREER_SECRET_KEY }}" --token "${{ secrets.FIREBASE_TOKEN }}" --project skapl-prod
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD }}' > /tmp/service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/service-account.json
+
+      - name: Set Firebase Functions config
+        run: |
+          firebase use skapl-prod --non-interactive
+          firebase functions:config:set turnstile.contact_secret="${{ secrets.PROD_TURNSTILE_CONTACT_SECRET_KEY }}" --project skapl-prod
+          firebase functions:config:set turnstile.career_secret="${{ secrets.PROD_TURNSTILE_CAREER_SECRET_KEY }}" --project skapl-prod
 
       - name: Deploy Firebase Functions
         run: |
-          firebase deploy --only functions --token "${{ secrets.FIREBASE_TOKEN }}" --project skapl-prod --force 
+          firebase deploy --only functions --project skapl-prod --non-interactive 

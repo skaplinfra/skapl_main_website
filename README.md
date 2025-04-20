@@ -183,7 +183,6 @@ For GitHub Actions to work properly, configure these repository secrets:
 - `DEMO_TURNSTILE_CONTACT_SECRET_KEY`
 - `DEMO_TURNSTILE_CAREER_SECRET_KEY`
 - `FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO` (Firebase service account JSON)
-- `FIREBASE_TOKEN` (Used for CI/CD deployment)
 
 **Production environment:**
 - `PROD_NEXT_PUBLIC_SUPABASE_URL`
@@ -193,7 +192,17 @@ For GitHub Actions to work properly, configure these repository secrets:
 - `PROD_TURNSTILE_CONTACT_SECRET_KEY`
 - `PROD_TURNSTILE_CAREER_SECRET_KEY`
 - `FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD` (Firebase service account JSON)
-- `FIREBASE_TOKEN` (Used for CI/CD deployment)
+
+### Setting up Firebase Service Account
+
+To set up the Firebase service account for GitHub Actions:
+
+1. Go to the Firebase console > Project settings > Service accounts
+2. Click "Generate new private key"
+3. Download the JSON file
+4. Add the entire JSON file content as a GitHub repository secret:
+   - `FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO` for demo environment
+   - `FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD` for production environment
 
 ### Firebase Functions
 
