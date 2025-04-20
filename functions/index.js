@@ -2,6 +2,7 @@ const functions = require('firebase-functions');
 const Parser = require('rss-parser');
 const fetch = require('node-fetch');
 const cors = require('cors')({ origin: true });
+const admin = require('./admin');
 
 const MEDIUM_FEED_URL = 'https://medium.com/feed/@techinfra';
 
@@ -68,12 +69,19 @@ exports.verifyTurnstile = functions.https.onRequest((req, res) => {
       
       // Determine which secret to use based on form type
       let secretKey;
+      const config = functions.config();
+      
       if (formType === 'contact') {
-        secretKey = process.env.TURNSTILE_CONTACT_SECRET_KEY;
+        secretKey = config.turnstile?.contact_secret || process.env.TURNSTILE_CONTACT_SECRET_KEY;
       } else if (formType === 'career') {
-        secretKey = process.env.TURNSTILE_CAREER_SECRET_KEY;
+        secretKey = config.turnstile?.career_secret || process.env.TURNSTILE_CAREER_SECRET_KEY;
       } else {
         return res.status(400).json({ error: 'Invalid form type' });
+      }
+      
+      if (!secretKey) {
+        console.error('Missing Turnstile secret key');
+        return res.status(500).json({ error: 'Server configuration error' });
       }
       
       const verifyURL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
