@@ -3,8 +3,6 @@ const Parser = require('rss-parser');
 const fetch = require('node-fetch');
 const cors = require('cors')({ origin: true });
 const admin = require('./admin');
-const fs = require('fs');
-const path = require('path');
 
 const MEDIUM_FEED_URL = 'https://medium.com/feed/@techinfra';
 
@@ -104,82 +102,4 @@ exports.verifyTurnstile = functions.https.onRequest((req, res) => {
       res.status(500).json({ error: 'Failed to verify token' });
     }
   });
-});
-
-// Next.js Server Function
-exports.nextServer = functions.https.onRequest((req, res) => {
-  // Set CORS headers
-  res.set('Access-Control-Allow-Origin', '*');
-  
-  // Handle OPTIONS requests for CORS preflight
-  if (req.method === 'OPTIONS') {
-    res.set('Access-Control-Allow-Methods', 'GET, POST');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
-    res.status(204).send('');
-    return;
-  }
-
-  // Get the requested path
-  const requestPath = req.path || '/';
-  
-  // The base directory where Next.js output is stored
-  const nextDir = path.join(__dirname, '../.next');
-  
-  // Check if this is a static file request (e.g., JavaScript, CSS, images)
-  if (requestPath.includes('.')) {
-    const staticFilePath = path.join(nextDir, 'static', path.basename(requestPath));
-    
-    // Check if the file exists
-    if (fs.existsSync(staticFilePath)) {
-      // Set appropriate content type based on file extension
-      const ext = path.extname(requestPath).toLowerCase();
-      switch (ext) {
-        case '.js':
-          res.set('Content-Type', 'application/javascript');
-          break;
-        case '.css':
-          res.set('Content-Type', 'text/css');
-          break;
-        case '.png':
-          res.set('Content-Type', 'image/png');
-          break;
-        case '.jpg':
-        case '.jpeg':
-          res.set('Content-Type', 'image/jpeg');
-          break;
-        default:
-          res.set('Content-Type', 'text/plain');
-      }
-      
-      // Stream the file to the response
-      fs.createReadStream(staticFilePath).pipe(res);
-      return;
-    }
-  }
-  
-  // For non-static files, serve the HTML content
-  try {
-    // Default to index.html for the root path
-    const htmlFile = requestPath === '/' 
-      ? path.join(nextDir, 'server/pages/index.html')
-      : path.join(nextDir, 'server/pages', `${requestPath}.html`);
-    
-    if (fs.existsSync(htmlFile)) {
-      const htmlContent = fs.readFileSync(htmlFile, 'utf8');
-      res.set('Content-Type', 'text/html');
-      res.send(htmlContent);
-    } else {
-      // If no specific page exists, try serving the 404 page
-      const notFoundPage = path.join(nextDir, 'server/pages/404.html');
-      if (fs.existsSync(notFoundPage)) {
-        const notFoundContent = fs.readFileSync(notFoundPage, 'utf8');
-        res.status(404).set('Content-Type', 'text/html').send(notFoundContent);
-      } else {
-        res.status(404).send('Page not found');
-      }
-    }
-  } catch (error) {
-    console.error('Error serving Next.js content:', error);
-    res.status(500).send('Internal Server Error');
-  }
 }); 

@@ -11,12 +11,6 @@ const nextConfig = {
       'miro.medium.com'
     ],
     unoptimized: true,
-  },
-  output: 'export',
-  distDir: 'out',
-  trailingSlash: false,
-  env: {
-    NEXT_PUBLIC_STATIC_EXPORT: 'true'
   }
 };
 

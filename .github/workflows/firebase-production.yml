@@ -33,6 +33,31 @@ jobs:
           echo "TURNSTILE_CAREER_SECRET_KEY=${{ secrets.PROD_TURNSTILE_CAREER_SECRET_KEY }}" >> .env.local
           echo "NEXT_PUBLIC_STATIC_EXPORT=true" >> .env.local
 
+      - name: Update next.config.js for static export
+        run: |
+          cat > next.config.js << 'EOL'
+          /** @type {import('next').NextConfig} */
+          const nextConfig = {
+            eslint: {
+              ignoreDuringBuilds: true,
+            },
+            images: {
+              domains: [
+                'images.unsplash.com',
+                'media.licdn.com',
+                'cdn-images-1.medium.com',
+                'miro.medium.com'
+              ],
+              unoptimized: true,
+            },
+            output: 'export',
+            distDir: 'out',
+            trailingSlash: false
+          };
+          
+          module.exports = nextConfig;
+          EOL
+
       - name: Build static site
         run: npm run build
 
