@@ -16,6 +16,21 @@
   }
 }
 
+/* Theme transition handling */
+html {
+  color-scheme: light;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Prevent flash of unstyled content during theme transition */
+.js-loaded .theme-transitioning * {
+  transition: none !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

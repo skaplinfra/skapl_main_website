@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
 export function Navbar() {
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
   const [isStaticExport, setIsStaticExport] = useState(false);
@@ -50,8 +50,26 @@ export function Navbar() {
     );
   };
 
-  // Prevent hydration mismatch by only evaluating theme value on client-side
-  const logoSrc = mounted ? (theme === 'dark' ? '/logo-w.png' : '/logo.png') : '/logo.png';
+  // Use resolvedTheme instead of theme to get the actual theme applied
+  const currentTheme = mounted ? resolvedTheme : 'light';
+  const logoSrc = currentTheme === 'dark' ? '/logo-w.png' : '/logo.png';
+
+  // If not mounted yet, add hidden class to prevent flash of unstyled content
+  const logoVisibility = mounted ? 'opacity-100' : 'opacity-0';
+
+  // Handle theme change with transition
+  const handleThemeChange = () => {
+    // Add transitioning class to avoid flash
+    document.documentElement.classList.add('theme-transitioning');
+    
+    // Toggle theme
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    
+    // Remove transitioning class after transition completes
+    setTimeout(() => {
+      document.documentElement.classList.remove('theme-transitioning');
+    }, 300); // Match transition duration from CSS
+  };
 
   return (
     <nav className="fixed w-full z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -64,7 +82,7 @@ export function Navbar() {
                   src={logoSrc}
                   alt="SKAPL Logo"
                   fill
-                  className="object-contain p-1 transition-opacity duration-300"
+                  className={`object-contain p-1 transition-opacity duration-300 ${logoVisibility}`}
                   priority
                   sizes="(max-width: 768px) 80px, 128px"
                   quality={100}
@@ -84,7 +102,8 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={handleThemeChange}
+              aria-label="Toggle theme"
             >
               <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -96,8 +115,9 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={handleThemeChange}
               className="mr-2"
+              aria-label="Toggle theme"
             >
               <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -106,6 +126,7 @@ export function Navbar() {
               variant="ghost"
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />

@@ -46,8 +46,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Add a class to the body to indicate that JS has loaded
+  // Helps with avoiding any flash of wrong theme
+  useEffect(() => {
+    document.body.classList.add('js-loaded');
+  }, []);
+
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem={false}
+      storageKey="theme"
+      disableTransitionOnChange={false}
+    >
       <Toaster 
         position={isMobile ? "top-center" : "bottom-right"} 
         expand={true} 
