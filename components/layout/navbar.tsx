@@ -13,6 +13,12 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
   const [isStaticExport, setIsStaticExport] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Hydration check - Only set state after component is mounted
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setIsStaticExport(process.env.NEXT_PUBLIC_STATIC_EXPORT === 'true');
@@ -44,6 +50,9 @@ export function Navbar() {
     );
   };
 
+  // Prevent hydration mismatch by only evaluating theme value on client-side
+  const logoSrc = mounted ? (theme === 'dark' ? '/logo-w.png' : '/logo.png') : '/logo.png';
+
   return (
     <nav className="fixed w-full z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -52,10 +61,10 @@ export function Navbar() {
             <div className="flex items-center">
               <div className="relative w-32 h-32 -my-4">
                 <Image
-                  src="/logo.png"
+                  src={logoSrc}
                   alt="SKAPL Logo"
                   fill
-                  className="object-contain p-1"
+                  className="object-contain p-1 transition-opacity duration-300"
                   priority
                   sizes="(max-width: 768px) 80px, 128px"
                   quality={100}
