@@ -11,11 +11,11 @@
       "cleanUrls": true,
       "rewrites": [
         {
-          "source": "/api/medium-posts",
+          "source": "/api/mediumPosts",
           "function": "mediumPosts"
         },
         {
-          "source": "/api/verify-turnstile",
+          "source": "/api/verifyTurnstile",
           "function": "verifyTurnstile"
         },
         {
@@ -25,7 +25,7 @@
       ]
     },
     {
-      "target": "prod",
+      "target": "production",
       "public": "out",
       "ignore": [
         "firebase.json",
@@ -35,11 +35,11 @@
       "cleanUrls": true,
       "rewrites": [
         {
-          "source": "/api/medium-posts",
+          "source": "/api/mediumPosts",
           "function": "mediumPosts"
         },
         {
-          "source": "/api/verify-turnstile",
+          "source": "/api/verifyTurnstile",
           "function": "verifyTurnstile"
         },
         {

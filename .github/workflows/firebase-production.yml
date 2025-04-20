@@ -66,6 +66,16 @@ jobs:
           cd functions
           npm install
 
+      - name: Delete obsolete Firebase function
+        uses: w9jds/firebase-action@master
+        with:
+          args: functions:delete nextServer --region us-central1 --force --token "$FIREBASE_TOKEN"
+        continue-on-error: true
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD }}
+          PROJECT_ID: skapl-prod
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -73,7 +83,7 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD }}'
           projectId: 'skapl-prod'
           channelId: 'live'
-          target: prod
+          target: production
 
       - name: Deploy Functions to Firebase
         uses: w9jds/firebase-action@master

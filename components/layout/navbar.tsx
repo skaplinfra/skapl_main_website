@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Moon, Sun, Menu, X } from 'lucide-react';
@@ -8,16 +8,52 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
+// Preload images outside of component to ensure they're loaded once
+if (typeof window !== 'undefined') {
+  const lightLogo = new window.Image();
+  lightLogo.src = '/logo.png';
+  
+  const darkLogo = new window.Image();
+  darkLogo.src = '/logo-w.png';
+}
+
 export function Navbar() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
   const [isStaticExport, setIsStaticExport] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [activeTheme, setActiveTheme] = useState<'light' | 'dark'>('light');
+  
+  // Manually track theme to avoid race conditions with useTheme hook
+  const isDarkTheme = useRef(false);
 
   // Hydration check - Only set state after component is mounted
   useEffect(() => {
     setMounted(true);
+
+    // Check for dark mode class on document
+    const checkTheme = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      isDarkTheme.current = isDark;
+      setActiveTheme(isDark ? 'dark' : 'light');
+    };
+    
+    // Initial check
+    checkTheme();
+    
+    // Set up a mutation observer to watch for theme class changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          checkTheme();
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, { attributes: true });
+    
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -50,25 +86,23 @@ export function Navbar() {
     );
   };
 
-  // Use resolvedTheme instead of theme to get the actual theme applied
-  const currentTheme = mounted ? resolvedTheme : 'light';
-  const logoSrc = currentTheme === 'dark' ? '/logo-w.png' : '/logo.png';
-
-  // If not mounted yet, add hidden class to prevent flash of unstyled content
-  const logoVisibility = mounted ? 'opacity-100' : 'opacity-0';
-
   // Handle theme change with transition
   const handleThemeChange = () => {
     // Add transitioning class to avoid flash
     document.documentElement.classList.add('theme-transitioning');
     
-    // Toggle theme
-    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    // Toggle theme using our local reference to ensure consistency
+    const newTheme = isDarkTheme.current ? 'light' : 'dark';
+    setTheme(newTheme);
+    
+    // Update our local state immediately
+    isDarkTheme.current = !isDarkTheme.current;
+    setActiveTheme(newTheme as 'light' | 'dark');
     
     // Remove transitioning class after transition completes
     setTimeout(() => {
       document.documentElement.classList.remove('theme-transitioning');
-    }, 300); // Match transition duration from CSS
+    }, 300);
   };
 
   return (
@@ -78,15 +112,30 @@ export function Navbar() {
           <NavLink href="/">
             <div className="flex items-center">
               <div className="relative w-32 h-32 -my-4">
-                <Image
-                  src={logoSrc}
-                  alt="SKAPL Logo"
-                  fill
-                  className={`object-contain p-1 transition-opacity duration-300 ${logoVisibility}`}
-                  priority
-                  sizes="(max-width: 768px) 80px, 128px"
-                  quality={100}
-                />
+                {!mounted ? (
+                  // Display a placeholder during SSR
+                  <div className="w-full h-full" />
+                ) : activeTheme === 'dark' ? (
+                  <Image
+                    src="/logo-w.png"
+                    alt="SKAPL Logo"
+                    fill
+                    className="object-contain p-1"
+                    priority
+                    sizes="(max-width: 768px) 80px, 128px"
+                    quality={100}
+                  />
+                ) : (
+                  <Image
+                    src="/logo.png"
+                    alt="SKAPL Logo"
+                    fill
+                    className="object-contain p-1"
+                    priority
+                    sizes="(max-width: 768px) 80px, 128px"
+                    quality={100}
+                  />
+                )}
               </div>
             </div>
           </NavLink>

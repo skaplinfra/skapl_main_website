@@ -1,7 +1,7 @@
 // Static version of the contact page for Firebase hosting
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -25,9 +25,19 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
+  const [mounted, setMounted] = useState(false);
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
+
+  // Set the Turnstile site key after the component mounts
+  useEffect(() => {
+    setMounted(true);
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY || '';
+    console.log('Turnstile contact site key:', siteKey ? 'Present' : 'Missing');
+    setTurnstileSiteKey(siteKey);
+  }, []);
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -46,6 +56,7 @@ export default function ContactPage() {
   };
 
   const handleTurnstileVerify = (token: string) => {
+    console.log("Received Turnstile token:", token ? "Present" : "Missing");
     setValue('turnstileToken', token);
   };
 
@@ -101,13 +112,15 @@ export default function ContactPage() {
                   )}
                 </div>
 
-                <div className="flex justify-center">
-                  <Turnstile
-                    id="contact-form-turnstile"
-                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY || ''}
-                    onVerify={handleTurnstileVerify}
-                  />
-                </div>
+                {mounted && (
+                  <div className="flex justify-center">
+                    <Turnstile
+                      id="contact-form-turnstile"
+                      siteKey={turnstileSiteKey}
+                      onVerify={handleTurnstileVerify}
+                    />
+                  </div>
+                )}
                 {errors.turnstileToken && (
                   <p className="text-sm text-destructive text-center mt-1">{errors.turnstileToken.message}</p>
                 )}

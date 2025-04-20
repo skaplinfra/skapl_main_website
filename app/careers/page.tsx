@@ -1,7 +1,7 @@
 // Static version of the careers page for Firebase hosting
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -51,9 +51,19 @@ const positions = [
 export default function CareersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
+  const [mounted, setMounted] = useState(false);
   const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
+
+  // Set the Turnstile site key after the component mounts
+  useEffect(() => {
+    setMounted(true);
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY || '';
+    console.log('Turnstile career site key:', siteKey ? 'Present' : 'Missing');
+    setTurnstileSiteKey(siteKey);
+  }, []);
 
   const onSubmit = async (data: FormData) => {
     if (!selectedFile) {
@@ -200,13 +210,18 @@ export default function CareersPage() {
               />
             </div>
 
-            <div className="flex justify-center">
-              <Turnstile
-                id="career-form-turnstile"
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY || ''}
-                onVerify={(token) => setValue('turnstileToken', token)}
-              />
-            </div>
+            {mounted && (
+              <div className="flex justify-center">
+                <Turnstile
+                  id="career-form-turnstile"
+                  siteKey={turnstileSiteKey}
+                  onVerify={(token) => {
+                    console.log("Received Turnstile token:", token ? "Present" : "Missing");
+                    setValue('turnstileToken', token);
+                  }}
+                />
+              </div>
+            )}
             {errors.turnstileToken && (
               <p className="text-sm text-destructive text-center mt-1">{errors.turnstileToken.message}</p>
             )}
