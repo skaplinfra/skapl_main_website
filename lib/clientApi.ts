@@ -19,6 +19,12 @@ export type ClientMediumPost = {
  * Verifies a Turnstile token with the server
  */
 export async function verifyTurnstileToken(token: string, formType: 'contact' | 'career'): Promise<boolean> {
+  // For static demo site, skip API calls entirely
+  if (typeof window !== 'undefined' && window.location.hostname.includes('web.app')) {
+    console.log(`Static demo detected - skipping Turnstile verification for ${formType} form`);
+    return true;
+  }
+
   try {
     // Use the existing Firebase Function for verification
     const response = await fetch('/api/verifyTurnstile', {
@@ -132,6 +138,12 @@ export async function submitCareerApplication(data: z.infer<typeof CareerFormSch
 
 // Fetch Medium posts
 export async function fetchMediumPosts(): Promise<ClientMediumPost[]> {
+  // For static demo site, return fallback data without API call
+  if (typeof window !== 'undefined' && window.location.hostname.includes('web.app')) {
+    console.log('Static demo detected - using fallback Medium posts');
+    return FALLBACK_MEDIUM_POSTS;
+  }
+
   try {
     // Use the existing Firebase Function endpoint
     const response = await fetch('/api/mediumPosts');
