@@ -183,6 +183,7 @@ For GitHub Actions to work properly, configure these repository secrets:
 - `DEMO_TURNSTILE_CONTACT_SECRET_KEY`
 - `DEMO_TURNSTILE_CAREER_SECRET_KEY`
 - `FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO` (Firebase service account JSON)
+- `FIREBASE_TOKEN` (Used for CI/CD deployment)
 
 **Production environment:**
 - `PROD_NEXT_PUBLIC_SUPABASE_URL`
@@ -191,4 +192,30 @@ For GitHub Actions to work properly, configure these repository secrets:
 - `PROD_TURNSTILE_CAREER_SITE_KEY`
 - `PROD_TURNSTILE_CONTACT_SECRET_KEY`
 - `PROD_TURNSTILE_CAREER_SECRET_KEY`
-- `FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD` (Firebase service account JSON) 
+- `FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD` (Firebase service account JSON)
+- `FIREBASE_TOKEN` (Used for CI/CD deployment)
+
+### Firebase Functions
+
+This project uses Firebase Cloud Functions to provide API endpoints for the static site:
+
+- `/api/medium-posts` - Fetches posts from Medium RSS feed
+- `/api/verify-turnstile` - Verifies Turnstile tokens for form submissions
+
+To develop and deploy Firebase Functions:
+
+```bash
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Login to Firebase
+firebase login
+
+# Deploy only functions
+firebase deploy --only functions
+
+# View function logs
+firebase functions:log
+```
+
+The functions are automatically deployed via GitHub Actions when pushing to the demo or main branch. 

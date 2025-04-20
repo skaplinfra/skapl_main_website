@@ -12,6 +12,14 @@
       "trailingSlash": false,
       "rewrites": [
         {
+          "source": "/api/medium-posts",
+          "function": "mediumPosts"
+        },
+        {
+          "source": "/api/verify-turnstile",
+          "function": "verifyTurnstile"
+        },
+        {
           "source": "**",
           "destination": "/index.html"
         }
@@ -29,10 +37,21 @@
       "trailingSlash": false,
       "rewrites": [
         {
+          "source": "/api/medium-posts",
+          "function": "mediumPosts"
+        },
+        {
+          "source": "/api/verify-turnstile",
+          "function": "verifyTurnstile"
+        },
+        {
           "source": "**",
           "destination": "/index.html"
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "source": "functions"
+  }
 } 
