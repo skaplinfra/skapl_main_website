@@ -4,23 +4,87 @@ import { z } from 'zod';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+// Create a fully mocked Supabase client for static exports or when env vars are missing
+const createMockClient = (): SupabaseClient => {
+  console.warn('Using mock Supabase client - no actual database operations will be performed');
+
+  const mockStorage = {
+    from: (bucket: string) => ({
+      upload: (path: string, file: File) => {
+        console.log(`Mock: Uploading ${file.name} to ${bucket}/${path}`);
+        return { data: { path }, error: null };
+      },
+      getPublicUrl: (path: string) => {
+        return { data: { publicUrl: `https://mock-storage-url.com/${bucket}/${path}` } };
+      }
+    })
+  };
+
+  return {
+    from: (table: string) => ({
+      select: (columns?: string) => {
+        console.log(`Mock: SELECT ${columns || '*'} FROM ${table}`);
+        return { 
+          order: () => ({ data: [], error: null }),
+          eq: () => ({ data: null, error: null }),
+          single: () => ({ data: null, error: null }),
+          data: [], 
+          error: null 
+        };
+      },
+      insert: (values: any[]) => {
+        console.log(`Mock: INSERT INTO ${table}`, values);
+        return { 
+          select: () => ({ single: () => ({ data: values[0], error: null }) }),
+          data: values[0], 
+          error: null 
+        };
+      },
+      update: (values: any) => {
+        console.log(`Mock: UPDATE ${table}`, values);
+        return { 
+          eq: () => ({ 
+            select: () => ({ single: () => ({ data: values, error: null }) }),
+            data: values, 
+            error: null 
+          }) 
+        };
+      },
+      delete: () => {
+        console.log(`Mock: DELETE FROM ${table}`);
+        return { 
+          eq: () => ({ data: null, error: null }) 
+        };
+      },
+    }),
+    storage: mockStorage,
+    auth: {
+      onAuthStateChange: () => ({ data: null, error: null, unsubscribe: () => {} }),
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      signOut: () => Promise.resolve({ error: null }),
+    },
+  } as unknown as SupabaseClient;
+};
+
+// Initialize Supabase client or mock
 let supabase: SupabaseClient;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   if (process.env.NODE_ENV === 'development') {
-    throw new Error('Missing Supabase environment variables');
+    console.warn('Missing Supabase environment variables, using mock client');
   }
-  // In production/build, return a mock client that returns empty data
-  supabase = {
-    from: () => ({
-      select: () => ({ data: [], error: null }),
-      insert: () => ({ data: null, error: null }),
-    }),
-  } as unknown as SupabaseClient;
+  supabase = createMockClient();
 } else {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    console.log('Supabase client initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Supabase client:', error);
+    supabase = createMockClient();
+  }
 }
 
+// Export the initialized supabase client
 export { supabase };
 
 // Helper types for your database schema

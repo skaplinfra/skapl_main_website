@@ -12,40 +12,23 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Turnstile } from '@/components/ui/turnstile';
-import { CareerFormData, submitCareerApplication } from '@/lib/clientApi';
+import { submitCareerApplication } from '@/lib/clientApi';
+import { CareerFormSchema, CareerFormData } from '@/lib/schemas'; // Import schema and type
 
-const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().optional(),
-  position_applied: z.string().min(1, 'Please select a position'),
-  cover_letter: z.string().optional(),
-  turnstileToken: z.string().min(1, 'Please complete the security check'),
-});
-
-type FormData = z.infer<typeof formSchema>;
+type FormData = z.infer<typeof CareerFormSchema>;
 
 const positions = [
   'Software Engineer',
-  'Senior Cloud Architect',
-  'Site Reliability Engineer (Devops)',
-  'DevOps Engineer',
   'Project Manager',
-  'Solar Energy Consultant',
   'Business Analyst',
-  'Operations Manager',
-  'Sales Manager',
-  'Marketing Manager',
-  'HR Manager',
-  'Customer Support',
-  'Data Analyst',
-  'Content Writer',
-  'Intern - SDE',
-  'Intern - Sales & Marketing',
-  'Intern - Finance',
-  'Intern - Operations',
-  'Intern - Business Development',
-  'Intern - Customer Success',
+  'UI/UX Designer',
+  'DevOps Engineer',
+  'QA Engineer',
+  'Data Scientist',
+  'Software Engineering Intern',
+  'UI/UX Design Intern',
+  'Business Analysis Intern',
+  'Other'
 ];
 
 export default function CareersPage() {
@@ -54,7 +37,7 @@ export default function CareersPage() {
   const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
   const [mounted, setMounted] = useState(false);
   const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(CareerFormSchema),
   });
 
   // Set the Turnstile site key after the component mounts

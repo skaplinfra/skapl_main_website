@@ -11,7 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Turnstile } from '@/components/ui/turnstile';
-import { ContactFormData, submitContactForm } from '@/lib/clientApi';
+import { submitContactForm } from '@/lib/clientApi';
+import { ContactFormData } from '@/lib/schemas';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
