@@ -50,23 +50,12 @@ jobs:
           channelId: 'live'
           target: demo
 
-      - name: Get Firebase CI Token
-        id: firebase-token
-        uses: jsmrcaga/firebase-action@v2.0.0
+      - name: Deploy Functions to Firebase
+        uses: w9jds/firebase-action@master
         with:
-          service_account: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO }}
-          project_id: 'skapl-demo'
-          command: 'login:ci'
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Set Firebase Functions Config
-        run: |
-          firebase use skapl-demo --token "${{ steps.firebase-token.outputs.token }}"
-          firebase functions:config:set turnstile.contact_secret="${{ secrets.DEMO_TURNSTILE_CONTACT_SECRET_KEY }}" --token "${{ steps.firebase-token.outputs.token }}" --project skapl-demo
-          firebase functions:config:set turnstile.career_secret="${{ secrets.DEMO_TURNSTILE_CAREER_SECRET_KEY }}" --token "${{ steps.firebase-token.outputs.token }}" --project skapl-demo
-
-      - name: Deploy Firebase Functions
-        run: |
-          firebase deploy --only functions --token "${{ steps.firebase-token.outputs.token }}" --project skapl-demo
+          args: deploy --only functions
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO }}
+          PROJECT_ID: skapl-demo
+          TURNSTILE_CONTACT_SECRET: ${{ secrets.DEMO_TURNSTILE_CONTACT_SECRET_KEY }}
+          TURNSTILE_CAREER_SECRET: ${{ secrets.DEMO_TURNSTILE_CAREER_SECRET_KEY }}

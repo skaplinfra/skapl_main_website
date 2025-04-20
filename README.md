@@ -211,7 +211,11 @@ This project uses Firebase Cloud Functions to provide API endpoints for the stat
 - `/api/medium-posts` - Fetches posts from Medium RSS feed
 - `/api/verify-turnstile` - Verifies Turnstile tokens for form submissions
 
-To develop and deploy Firebase Functions:
+The functions are automatically deployed via GitHub Actions when pushing to the demo or main branch using the `w9jds/firebase-action` action. Environment variables for Turnstile secret keys are passed directly to the functions during deployment.
+
+### Local Firebase Development
+
+To develop and test Firebase Functions locally:
 
 ```bash
 # Install Firebase CLI
@@ -220,11 +224,13 @@ npm install -g firebase-tools
 # Login to Firebase
 firebase login
 
+# Set environment variables for local testing
+export TURNSTILE_CONTACT_SECRET="your_secret_key"
+export TURNSTILE_CAREER_SECRET="your_secret_key"
+
 # Deploy only functions
 firebase deploy --only functions
 
 # View function logs
 firebase functions:log
-```
-
-The functions are automatically deployed via GitHub Actions when pushing to the demo or main branch. 
+``` 

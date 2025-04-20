@@ -69,12 +69,12 @@ exports.verifyTurnstile = functions.https.onRequest((req, res) => {
       
       // Determine which secret to use based on form type
       let secretKey;
-      const config = functions.config();
       
       if (formType === 'contact') {
-        secretKey = config.turnstile?.contact_secret || process.env.TURNSTILE_CONTACT_SECRET_KEY;
+        // Use environment variable directly (set during deployment)
+        secretKey = process.env.TURNSTILE_CONTACT_SECRET;
       } else if (formType === 'career') {
-        secretKey = config.turnstile?.career_secret || process.env.TURNSTILE_CAREER_SECRET_KEY;
+        secretKey = process.env.TURNSTILE_CAREER_SECRET;
       } else {
         return res.status(400).json({ error: 'Invalid form type' });
       }
