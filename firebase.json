@@ -2,51 +2,31 @@
   "hosting": [
     {
       "target": "demo",
-      "public": "out",
+      "public": ".next",
       "ignore": [
         "firebase.json",
         "**/.*",
         "**/node_modules/**"
       ],
-      "cleanUrls": true,
-      "trailingSlash": false,
       "rewrites": [
         {
-          "source": "/api/medium-posts",
-          "function": "mediumPosts"
-        },
-        {
-          "source": "/api/verify-turnstile",
-          "function": "verifyTurnstile"
-        },
-        {
           "source": "**",
-          "destination": "/index.html"
+          "function": "nextServer"
         }
       ]
     },
     {
       "target": "prod",
-      "public": "out",
+      "public": ".next",
       "ignore": [
         "firebase.json",
         "**/.*",
         "**/node_modules/**"
       ],
-      "cleanUrls": true,
-      "trailingSlash": false,
       "rewrites": [
         {
-          "source": "/api/medium-posts",
-          "function": "mediumPosts"
-        },
-        {
-          "source": "/api/verify-turnstile",
-          "function": "verifyTurnstile"
-        },
-        {
           "source": "**",
-          "destination": "/index.html"
+          "function": "nextServer"
         }
       ]
     }

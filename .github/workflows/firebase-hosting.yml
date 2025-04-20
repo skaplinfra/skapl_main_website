@@ -31,9 +31,8 @@ jobs:
           echo "NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY=${{ secrets.DEMO_TURNSTILE_CAREER_SITE_KEY }}" >> .env.local
           echo "TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.DEMO_TURNSTILE_CONTACT_SECRET_KEY }}" >> .env.local
           echo "TURNSTILE_CAREER_SECRET_KEY=${{ secrets.DEMO_TURNSTILE_CAREER_SECRET_KEY }}" >> .env.local
-          echo "NEXT_PUBLIC_STATIC_EXPORT=true" >> .env.local
 
-      - name: Build static site
+      - name: Build Next.js app
         run: npm run build
 
       - name: Install Functions dependencies
