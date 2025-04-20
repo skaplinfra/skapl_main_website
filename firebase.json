@@ -20,6 +20,14 @@
           "function": "verifyTurnstile"
         },
         {
+          "source": "/api/contact-form",
+          "function": "submitContactForm"
+        },
+        {
+          "source": "/api/career-form",
+          "function": "submitCareerForm"
+        },
+        {
           "source": "**",
           "destination": "/index.html"
         }
@@ -54,6 +62,14 @@
         {
           "source": "/api/verifyTurnstile",
           "function": "verifyTurnstile"
+        },
+        {
+          "source": "/api/contact-form",
+          "function": "submitContactForm"
+        },
+        {
+          "source": "/api/career-form",
+          "function": "submitCareerForm"
         },
         {
           "source": "**",

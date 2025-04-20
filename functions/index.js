@@ -3,6 +3,7 @@ const Parser = require('rss-parser');
 const fetch = require('node-fetch');
 const cors = require('cors')({ origin: true });
 const admin = require('./admin');
+const { createClient } = require('@supabase/supabase-js');
 
 const MEDIUM_FEED_URL = 'https://medium.com/feed/@techinfra';
 
@@ -100,6 +101,143 @@ exports.verifyTurnstile = functions.https.onRequest((req, res) => {
     } catch (error) {
       console.error('Error verifying Turnstile token:', error);
       res.status(500).json({ error: 'Failed to verify token' });
+    }
+  });
+});
+
+// Function to handle contact form submissions
+exports.submitContactForm = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    try {
+      const { name, email, phone, message, turnstileToken } = req.body;
+      
+      if (!name || !email || !message || !turnstileToken) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      
+      // Verify turnstile token first
+      const verifyURL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+      const formData = new URLSearchParams();
+      formData.append('secret', process.env.TURNSTILE_CONTACT_SECRET);
+      formData.append('response', turnstileToken);
+      
+      const verifyResponse = await fetch(verifyURL, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const verifyData = await verifyResponse.json();
+      
+      if (!verifyData.success) {
+        return res.status(400).json({ error: 'Invalid security token' });
+      }
+      
+      // Initialize Supabase client
+      const supabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_KEY
+      );
+      
+      // Insert data into Supabase
+      const { data, error } = await supabase
+        .from('contact_submissions')
+        .insert([
+          {
+            name,
+            email,
+            phone: phone || null,
+            message
+          }
+        ])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      
+      return res.status(200).json({ success: true, data });
+      
+    } catch (error) {
+      console.error('Contact form submission error:', error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+});
+
+// Function to handle career form submissions
+exports.submitCareerForm = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    try {
+      // We need to handle multipart form data for file uploads
+      // For simplicity, we'll accept JSON for now and add file upload later
+      const { name, email, phone, position_applied, cover_letter, turnstileToken } = req.body;
+      
+      if (!name || !email || !position_applied || !turnstileToken) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      
+      // Verify turnstile token first
+      const verifyURL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+      const formData = new URLSearchParams();
+      formData.append('secret', process.env.TURNSTILE_CAREER_SECRET);
+      formData.append('response', turnstileToken);
+      
+      const verifyResponse = await fetch(verifyURL, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const verifyData = await verifyResponse.json();
+      
+      if (!verifyData.success) {
+        return res.status(400).json({ error: 'Invalid security token' });
+      }
+      
+      // Initialize Supabase client
+      const supabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_KEY
+      );
+      
+      // For now, create a mock resume URL (in a real implementation, we'd upload the file)
+      const resumeUrl = `https://example.com/mock-resume-${Date.now()}.pdf`;
+      
+      // Insert data into Supabase
+      const { data, error } = await supabase
+        .from('career_applications')
+        .insert([
+          {
+            name,
+            email,
+            phone: phone || null,
+            position_applied,
+            cover_letter: cover_letter || null,
+            resume_url: resumeUrl
+          }
+        ])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      
+      return res.status(200).json({ success: true, data });
+      
+    } catch (error) {
+      console.error('Career form submission error:', error);
+      res.status(500).json({ error: 'Server error' });
     }
   });
 }); 
