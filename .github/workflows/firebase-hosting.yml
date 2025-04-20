@@ -89,13 +89,3 @@ jobs:
           projectId: skapl-demo
           channelId: demo
           target: demo
-
-      - name: Deploy Functions to Firebase
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only functions
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO }}
-          PROJECT_ID: skapl-demo
-          TURNSTILE_CONTACT_SECRET: ${{ secrets.DEMO_TURNSTILE_CONTACT_SECRET_KEY }}
-          TURNSTILE_CAREER_SECRET: ${{ secrets.DEMO_TURNSTILE_CAREER_SECRET_KEY }}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { Card } from '@/components/ui/card';
 import { ClientMediumPost, fetchMediumPosts } from '@/lib/clientApi';
+import { useTheme } from 'next-themes';
 
 // Fallback data in case API fails
 const FALLBACK_POSTS: ClientMediumPost[] = [
@@ -30,6 +31,33 @@ const FALLBACK_POSTS: ClientMediumPost[] = [
 export default function BlogPage() {
   const [posts, setPosts] = useState<ClientMediumPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  // Mark as mounted on client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Listen for custom theme change events
+  useEffect(() => {
+    const handleThemeChanged = (e: Event) => {
+      // Force a re-render when theme changes
+      setTimeout(() => {
+        // This is just to trigger a re-render
+        setMounted(prev => {
+          const newState = !prev;
+          setMounted(true);
+          return true;
+        });
+      }, 10);
+    };
+    
+    window.addEventListener('theme-changed', handleThemeChanged);
+    return () => {
+      window.removeEventListener('theme-changed', handleThemeChanged);
+    };
+  }, []);
 
   useEffect(() => {
     async function loadPosts() {
@@ -54,6 +82,26 @@ export default function BlogPage() {
 
     loadPosts();
   }, []);
+
+  // SSR safety - don't render until mounted
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold mb-4">Our Blog</h1>
+            <p className="text-xl text-muted-foreground">
+              Insights, updates, and stories from the SKAPL team
+            </p>
+          </div>
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading blog posts...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background py-24">

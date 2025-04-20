@@ -53,7 +53,21 @@ export function Navbar() {
     
     observer.observe(document.documentElement, { attributes: true });
     
-    return () => observer.disconnect();
+    // Listen for custom theme change events as a backup mechanism
+    const handleThemeChanged = (e: CustomEvent) => {
+      const newTheme = e.detail?.theme;
+      if (newTheme) {
+        isDarkTheme.current = newTheme === 'dark';
+        setActiveTheme(newTheme as 'light' | 'dark');
+      }
+    };
+    
+    window.addEventListener('theme-changed', handleThemeChanged as EventListener);
+    
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('theme-changed', handleThemeChanged as EventListener);
+    };
   }, []);
 
   useEffect(() => {
@@ -98,6 +112,11 @@ export function Navbar() {
     // Update our local state immediately
     isDarkTheme.current = !isDarkTheme.current;
     setActiveTheme(newTheme as 'light' | 'dark');
+    
+    // Trigger the custom event manually as a backup
+    window.dispatchEvent(new CustomEvent('theme-changed', { 
+      detail: { theme: newTheme } 
+    }));
     
     // Remove transitioning class after transition completes
     setTimeout(() => {
@@ -183,6 +202,23 @@ export function Navbar() {
                 <Menu className="h-6 w-6" />
               )}
             </Button>
+            {process.env.NODE_ENV === 'development' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => window.location.reload()}
+                className="ml-2 opacity-40 hover:opacity-100"
+                aria-label="Force refresh (dev only)"
+                title="Force refresh (dev only)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                  <path d="M21 3v5h-5" />
+                  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                  <path d="M8 16H3v5" />
+                </svg>
+              </Button>
+            )}
           </div>
         </div>
       </div>

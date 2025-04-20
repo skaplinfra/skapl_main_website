@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-import { getMediumPosts } from '@/lib/medium';
+import ClientBlogPost from './client-post';
 
 // Define your blog posts data
 const blogPosts = [
@@ -59,42 +59,5 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
     );
   }
 
-  return (
-    <article className="min-h-screen bg-background py-24">
-      <div className="max-w-4xl mx-auto px-4">
-        <Link 
-          href="/blog"
-          className="inline-flex items-center text-primary hover:text-primary/80 mb-8"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Blog
-        </Link>
-
-        <div className="relative h-[400px] rounded-lg overflow-hidden mb-8">
-          <Image
-            src={post.coverImage}
-            alt={post.title}
-            fill
-            className="object-cover"
-            priority
-          />
-        </div>
-
-        <header className="mb-12">
-          <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-          <div className="flex items-center text-muted-foreground">
-            <span>{post.author}</span>
-            <span className="mx-2">•</span>
-            <span>{formatDate(post.date)}</span>
-            <span className="mx-2">•</span>
-            <span>{post.category}</span>
-          </div>
-        </header>
-
-        <div className="prose prose-lg dark:prose-invert max-w-none">
-          {post.content}
-        </div>
-      </div>
-    </article>
-  );
+  return <ClientBlogPost post={post} />;
 } 

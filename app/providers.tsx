@@ -5,6 +5,12 @@ import { Toaster } from 'sonner';
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
+declare global {
+  interface Window {
+    fixTheme?: () => 'light' | 'dark';
+  }
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
@@ -50,6 +56,30 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // Helps with avoiding any flash of wrong theme
   useEffect(() => {
     document.body.classList.add('js-loaded');
+    
+    // Add a class change listener to ensure theme consistency
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class' && 
+            mutation.target === document.documentElement) {
+          // Store current theme when it changes in DOM
+          const isDark = document.documentElement.classList.contains('dark');
+          try {
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          } catch (e) {
+            console.error('Failed to save theme to localStorage:', e);
+          }
+          
+          // Force theme-specific elements (like logos) to update
+          window.dispatchEvent(new CustomEvent('theme-changed', { 
+            detail: { theme: isDark ? 'dark' : 'light' } 
+          }));
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
   }, []);
 
   return (
