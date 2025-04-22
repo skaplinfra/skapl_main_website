@@ -1,73 +1,173 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { Card } from '@/components/ui/card';
-import { formatDate } from '@/lib/utils';
-import { getMediumPosts } from '@/lib/medium';
+'use client';
 
-export default async function BlogPage() {
-  const posts = await getMediumPosts();
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { format } from 'date-fns';
+import { Card } from '@/components/ui/card';
+import { ClientMediumPost, fetchMediumPosts } from '@/lib/clientApi';
+import { useTheme } from 'next-themes';
+
+// Fallback data in case API fails
+const FALLBACK_POSTS: ClientMediumPost[] = [
+  {
+    title: "Renewable Energy: The Path Forward",
+    link: "https://medium.com/@techinfra/renewable-energy-the-path-forward",
+    pubDate: new Date().toISOString(),
+    content: "Exploring the latest innovations in renewable energy technology and how they're shaping our sustainable future...",
+    author: "SKAPL Team",
+    thumbnail: "https://miro.medium.com/max/1200/1*jFyawcsqoYctkTuZg6wQ1A.jpeg"
+  },
+  {
+    title: "Smart Solutions for Modern Energy Challenges",
+    link: "https://medium.com/@techinfra/smart-solutions-for-modern-energy-challenges",
+    pubDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    content: "How AI and data analytics are transforming the way we manage and distribute energy resources...",
+    author: "SKAPL Team",
+    thumbnail: "https://miro.medium.com/max/1200/1*-hQb0rUVucwVHF3k0qU8Yw.jpeg"
+  }
+];
+
+export default function BlogPage() {
+  const [posts, setPosts] = useState<ClientMediumPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  // Mark as mounted on client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Listen for custom theme change events
+  useEffect(() => {
+    const handleThemeChanged = (e: Event) => {
+      // Force a re-render when theme changes
+      setTimeout(() => {
+        // This is just to trigger a re-render
+        setMounted(prev => {
+          const newState = !prev;
+          setMounted(true);
+          return true;
+        });
+      }, 10);
+    };
+    
+    window.addEventListener('theme-changed', handleThemeChanged);
+    return () => {
+      window.removeEventListener('theme-changed', handleThemeChanged);
+    };
+  }, []);
+
+  useEffect(() => {
+    async function loadPosts() {
+      try {
+        setLoading(true);
+        const mediumPosts = await fetchMediumPosts();
+        
+        if (mediumPosts.length > 0) {
+          setPosts(mediumPosts);
+        } else {
+          // Use fallback data if no posts were returned
+          setPosts(FALLBACK_POSTS);
+        }
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        // Use fallback data if fetch fails
+        setPosts(FALLBACK_POSTS);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPosts();
+  }, []);
+
+  // SSR safety - don't render until mounted
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold mb-4">Our Blog</h1>
+            <p className="text-xl text-muted-foreground">
+              Insights, updates, and stories from the SKAPL team
+            </p>
+          </div>
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading blog posts...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold mb-4">SKAPL Blog</h1>
+          <h1 className="text-4xl font-bold mb-4">Our Blog</h1>
           <p className="text-xl text-muted-foreground">
-            Insights and updates from our CTO on technology, innovation, and industry trends
+            Insights, updates, and stories from the SKAPL team
           </p>
         </div>
 
-        {/* Blog Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post) => {
-            const slug = post.guid.split('/').pop() || '';
-            const coverImage = post.content.match(/<img[^>]+src="([^">]+)"/)?.[1] || 
-              'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80';
-            
-            // Extract excerpt from content
-            const excerpt = post.content
-              .replace(/<[^>]+>/g, '') // Remove HTML tags
-              .slice(0, 150) // Get first 150 characters
-              .trim() + '...';
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading blog posts...</p>
+          </div>
+        )}
 
-            return (
-              <Link key={post.guid} href={`/blog/${slug}`}>
-                <Card className="overflow-hidden h-full hover:shadow-lg transition-shadow duration-300">
-                  <div className="relative h-48">
-                    <Image
-                      src={coverImage}
-                      alt={post.title}
-                      fill
-                      className="object-cover"
-                    />
+        {/* Blog Posts Grid */}
+        {!loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post, index) => (
+              <Card key={index} className="overflow-hidden flex flex-col">
+                <div className="relative h-48">
+                  <Image
+                    src={post.thumbnail}
+                    alt={post.title}
+                    fill
+                    className="object-cover"
+                    unoptimized // Since we're using external images
+                  />
+                </div>
+                <div className="p-6 flex-1 flex flex-col">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                    <span>{format(new Date(post.pubDate), 'MMM d, yyyy')}</span>
+                    <span>•</span>
+                    <span>{post.author}</span>
                   </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-4 mb-3">
-                      {post.categories.slice(0, 1).map((category, index) => (
-                        <span key={index} className="text-sm text-primary font-medium">
-                          {category}
-                        </span>
-                      ))}
-                      <span className="text-sm text-muted-foreground">
-                        {formatDate(post.pubDate)}
-                      </span>
-                    </div>
-                    <h2 className="text-xl font-semibold mb-2 line-clamp-2">
-                      {post.title}
-                    </h2>
-                    <p className="text-muted-foreground line-clamp-3 mb-4">
-                      {excerpt}
-                    </p>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <span>By Vishrut Kumar</span>
-                    </div>
+                  <h2 className="text-xl font-semibold mb-3 line-clamp-2">
+                    {post.title}
+                  </h2>
+                  <p className="text-muted-foreground mb-6 line-clamp-3">
+                    {post.content}
+                  </p>
+                  <div className="mt-auto">
+                    <Link 
+                      href={post.link}
+                      target="_blank"
+                      rel="noopener noreferrer" 
+                      className="text-primary hover:text-primary/80 font-medium"
+                    >
+                      Read More →
+                    </Link>
                   </div>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {!loading && posts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No blog posts found.</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
+// Static version of the contact page for Firebase hosting
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,39 +10,55 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { Turnstile } from '@/components/ui/turnstile';
+import { submitContactForm } from '@/lib/clientApi';
+import { ContactFormData } from '@/lib/schemas';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   phone: z.string().optional(),
   message: z.string().min(10, 'Message must be at least 10 characters'),
+  turnstileToken: z.string().min(1, 'Please complete the security check'),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
+  const [mounted, setMounted] = useState(false);
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
+
+  // Set the Turnstile site key after the component mounts
+  useEffect(() => {
+    setMounted(true);
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY || '';
+    console.log('Turnstile contact site key:', siteKey ? 'Present' : 'Missing');
+    setTurnstileSiteKey(siteKey);
+  }, []);
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from('contact_forms')
-        .insert([data]);
-
-      if (error) throw error;
-
+      // Using client-side API for static export
+      await submitContactForm(data as ContactFormData);
+      
       toast.success('Message sent successfully!');
       reset();
     } catch (error) {
-      toast.error('Failed to send message. Please try again.');
+      console.error('Form submission error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleTurnstileVerify = (token: string) => {
+    console.log("Received Turnstile token:", token ? "Present" : "Missing");
+    setValue('turnstileToken', token);
   };
 
   return (
@@ -95,6 +112,19 @@ export default function ContactPage() {
                     <p className="text-sm text-destructive mt-1">{errors.message.message}</p>
                   )}
                 </div>
+
+                {mounted && (
+                  <div className="flex justify-center">
+                    <Turnstile
+                      id="contact-form-turnstile"
+                      siteKey={turnstileSiteKey}
+                      onVerify={handleTurnstileVerify}
+                    />
+                  </div>
+                )}
+                {errors.turnstileToken && (
+                  <p className="text-sm text-destructive text-center mt-1">{errors.turnstileToken.message}</p>
+                )}
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? 'Sending...' : 'Send Message'}

@@ -1,8 +1,18 @@
+'use client';
+
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Leaf, Lightbulb, HardHat, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
+  const [isStatic, setIsStatic] = useState<string | undefined>(undefined);
+  
+  useEffect(() => {
+    setIsStatic(process.env.NEXT_PUBLIC_STATIC_EXPORT);
+    console.log('Static Export:', process.env.NEXT_PUBLIC_STATIC_EXPORT);
+  }, []);
+
   return (
     <>
       {/* Hero Section */}
@@ -21,6 +31,11 @@ export default function Home() {
           <p className="text-xl md:text-2xl text-white/90">
             At SKAPL, we don't just build systems — we build sustainable futures.
           </p>
+          {isStatic !== undefined && (
+            <p className="text-sm text-white/70 mt-4">
+              Build mode: {isStatic === 'true' ? 'Static Export' : 'Server-side Rendering'}
+            </p>
+          )}
         </div>
       </div>
 

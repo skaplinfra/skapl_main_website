@@ -142,4 +142,95 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 SKAPL - [contact@skapl.com](mailto:contact@skapl.com)
 
-Project Link: [https://github.com/yourusername/skapl_main_website](https://github.com/yourusername/skapl_main_website) 
+Project Link: [https://github.com/yourusername/skapl_main_website](https://github.com/yourusername/skapl_main_website)
+
+## Deployment
+
+### Firebase Hosting
+
+This project is configured for deployment to Firebase Hosting with two environments:
+
+- **Demo** (demo branch): [https://skapl-demo.web.app](https://skapl-demo.web.app)
+- **Production** (main branch): [https://skapl-prod.web.app](https://skapl-prod.web.app)
+
+#### Manual Deployment
+
+To deploy manually:
+
+```bash
+# For demo environment
+npm run deploy:demo
+
+# For production environment
+npm run deploy:prod
+```
+
+#### GitHub Actions Automated Deployment
+
+This repository is configured with GitHub Actions workflows that automatically deploy:
+- Push to `demo` branch → Demo environment
+- Push to `main` branch → Production environment
+
+#### Required GitHub Secrets
+
+For GitHub Actions to work properly, configure these repository secrets:
+
+**Demo environment:**
+- `DEMO_NEXT_PUBLIC_SUPABASE_URL`
+- `DEMO_NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `DEMO_TURNSTILE_CONTACT_SITE_KEY`
+- `DEMO_TURNSTILE_CAREER_SITE_KEY`
+- `DEMO_TURNSTILE_CONTACT_SECRET_KEY`
+- `DEMO_TURNSTILE_CAREER_SECRET_KEY`
+- `FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO` (Firebase service account JSON)
+
+**Production environment:**
+- `PROD_NEXT_PUBLIC_SUPABASE_URL`
+- `PROD_NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `PROD_TURNSTILE_CONTACT_SITE_KEY`
+- `PROD_TURNSTILE_CAREER_SITE_KEY`
+- `PROD_TURNSTILE_CONTACT_SECRET_KEY`
+- `PROD_TURNSTILE_CAREER_SECRET_KEY`
+- `FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD` (Firebase service account JSON)
+
+### Setting up Firebase Service Account
+
+To set up the Firebase service account for GitHub Actions:
+
+1. Go to the Firebase console > Project settings > Service accounts
+2. Click "Generate new private key"
+3. Download the JSON file
+4. Add the entire JSON file content as a GitHub repository secret:
+   - `FIREBASE_SERVICE_ACCOUNT_SKAPL_DEMO` for demo environment
+   - `FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD` for production environment
+
+### Firebase Functions
+
+This project uses Firebase Cloud Functions to provide API endpoints for the static site:
+
+- `/api/medium-posts` - Fetches posts from Medium RSS feed
+- `/api/verify-turnstile` - Verifies Turnstile tokens for form submissions
+
+The functions are automatically deployed via GitHub Actions when pushing to the demo or main branch using the `w9jds/firebase-action` action. Environment variables for Turnstile secret keys are passed directly to the functions during deployment.
+
+### Local Firebase Development
+
+To develop and test Firebase Functions locally:
+
+```bash
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Login to Firebase
+firebase login
+
+# Set environment variables for local testing
+export TURNSTILE_CONTACT_SECRET="your_secret_key"
+export TURNSTILE_CAREER_SECRET="your_secret_key"
+
+# Deploy only functions
+firebase deploy --only functions
+
+# View function logs
+firebase functions:log
+``` 

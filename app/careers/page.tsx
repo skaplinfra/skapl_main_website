@@ -1,6 +1,7 @@
+// Static version of the careers page for Firebase hosting
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -10,49 +11,42 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { Turnstile } from '@/components/ui/turnstile';
+import { submitCareerApplication } from '@/lib/clientApi';
+import { CareerFormSchema, CareerFormData } from '@/lib/schemas'; // Import schema and type
 
-const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().optional(),
-  position_applied: z.string().min(1, 'Please select a position'),
-  cover_letter: z.string().optional(),
-});
-
-type FormData = z.infer<typeof formSchema>;
+type FormData = z.infer<typeof CareerFormSchema>;
 
 const positions = [
   'Software Engineer',
-  'Senior Cloud Architect',
-  'Site Reliability Engineer (Devops)',
-  'DevOps Engineer',
   'Project Manager',
-  'Solar Energy Consultant',
   'Business Analyst',
-  'Operations Manager',
-  'Sales Manager',
-  'Marketing Manager',
-  'HR Manager',
-  'Customer Support',
-  'Data Analyst',
-  'Content Writer',
-  'Intern - SDE',
-  'Intern - Sales & Marketing',
-  'Intern - Finance',
-  'Intern - Operations',
-  'Intern - Business Development',
-  'Intern - Customer Success',
-  
-  
+  'UI/UX Designer',
+  'DevOps Engineer',
+  'QA Engineer',
+  'Data Scientist',
+  'Software Engineering Intern',
+  'UI/UX Design Intern',
+  'Business Analysis Intern',
+  'Other'
 ];
 
 export default function CareersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
+  const [mounted, setMounted] = useState(false);
   const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(CareerFormSchema),
   });
+
+  // Set the Turnstile site key after the component mounts
+  useEffect(() => {
+    setMounted(true);
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY || '';
+    console.log('Turnstile career site key:', siteKey ? 'Present' : 'Missing');
+    setTurnstileSiteKey(siteKey);
+  }, []);
 
   const onSubmit = async (data: FormData) => {
     if (!selectedFile) {
@@ -62,77 +56,8 @@ export default function CareersPage() {
 
     setIsSubmitting(true);
     try {
-      // Log the file details
-      console.log('File details:', {
-        name: selectedFile.name,
-        type: selectedFile.type,
-        size: selectedFile.size
-      });
-
-      // First, check if the 'resumes' bucket exists
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-      
-      if (bucketsError) {
-        console.error('Error fetching buckets:', bucketsError);
-        toast.error('Failed to check storage configuration');
-        return;
-      }
-
-      console.log('Available buckets:', buckets?.map(b => b.name));
-      
-      // Attempt direct upload without bucket check
-      console.log('Attempting file upload...');
-      const fileExt = selectedFile.name.split('.').pop()?.toLowerCase();
-      const fileName = `${Date.now()}_${data.name.replace(/\s+/g, '_')}.${fileExt}`;
-      
-      const { error: uploadError, data: fileData } = await supabase.storage
-        .from('resumes')
-        .upload(fileName, selectedFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        console.error('Upload error details:', {
-          message: uploadError.message,
-          name: uploadError.name
-        });
-        throw uploadError;
-      }
-
-      console.log('File uploaded successfully:');
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('resumes')
-        .getPublicUrl(fileName);
-
-      //console.log('Generated public URL:', publicUrl);
-
-      // Submit application data
-      const applicationData = {
-        ...data,
-        resume_url: publicUrl,
-        submitted_at: new Date().toISOString(),
-      };
-
-      //console.log('Submitting application data:', applicationData);
-      
-      const { error: submitError, data: submittedData } = await supabase
-        .from('career_applications')
-        .insert([applicationData])
-        .select()
-        .single();
-
-      if (submitError) {
-        console.error('Application submission error:', {
-          message: submitError.message,
-          code: submitError.code,
-          details: submitError.details,
-          hint: submitError.hint
-        });
-        throw submitError;
-      }
+      // Using client-side API for static export
+      await submitCareerApplication(data as CareerFormData, selectedFile);
 
       toast.success('Application received! We\'ll reach out to you soon.', {
         duration: 5000,
@@ -144,7 +69,7 @@ export default function CareersPage() {
       reset();
       setSelectedFile(null);
     } catch (error) {
-      console.error('Full error details:', error);
+      console.error('Application submission error:', error);
       if (error instanceof Error) {
         toast.error(`Failed to submit application: ${error.message}`, {
           duration: 5000,
@@ -267,6 +192,22 @@ export default function CareersPage() {
                 rows={5}
               />
             </div>
+
+            {mounted && (
+              <div className="flex justify-center">
+                <Turnstile
+                  id="career-form-turnstile"
+                  siteKey={turnstileSiteKey}
+                  onVerify={(token) => {
+                    console.log("Received Turnstile token:", token ? "Present" : "Missing");
+                    setValue('turnstileToken', token);
+                  }}
+                />
+              </div>
+            )}
+            {errors.turnstileToken && (
+              <p className="text-sm text-destructive text-center mt-1">{errors.turnstileToken.message}</p>
+            )}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Submit Application'}
