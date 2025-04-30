@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Turnstile } from '@/components/ui/turnstile';
 import { submitContactForm } from '@/lib/clientApi';
 import { ContactFormData } from '@/lib/schemas';
+import content from '@/CONTENT.json';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -31,6 +32,7 @@ export default function ContactPage() {
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
+  const contactContent = content.contact;
 
   // Set the Turnstile site key after the component mounts
   useEffect(() => {
@@ -46,7 +48,7 @@ export default function ContactPage() {
       // Using client-side API for static export
       await submitContactForm(data as ContactFormData);
       
-      toast.success('Message sent successfully!');
+      toast.success(contactContent.form.successMessage);
       reset();
     } catch (error) {
       console.error('Form submission error:', error);
@@ -67,12 +69,12 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Contact Form */}
           <div>
-            <h1 className="text-4xl font-bold mb-8">Get in Touch</h1>
+            <h1 className="text-4xl font-bold mb-8">{contactContent.title}</h1>
             <Card className="p-6">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div>
                   <Input
-                    placeholder="Your Name"
+                    placeholder={contactContent.form.namePlaceholder}
                     {...register('name')}
                     className={errors.name ? 'border-destructive' : ''}
                   />
@@ -84,7 +86,7 @@ export default function ContactPage() {
                 <div>
                   <Input
                     type="email"
-                    placeholder="Email Address"
+                    placeholder={contactContent.form.emailPlaceholder}
                     {...register('email')}
                     className={errors.email ? 'border-destructive' : ''}
                   />
@@ -96,14 +98,14 @@ export default function ContactPage() {
                 <div>
                   <Input
                     type="tel"
-                    placeholder="Phone Number (Optional)"
+                    placeholder={contactContent.form.phonePlaceholder}
                     {...register('phone')}
                   />
                 </div>
 
                 <div>
                   <Textarea
-                    placeholder="Your Message"
+                    placeholder={contactContent.form.messagePlaceholder}
                     {...register('message')}
                     className={errors.message ? 'border-destructive' : ''}
                     rows={5}
@@ -127,7 +129,7 @@ export default function ContactPage() {
                 )}
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                  {isSubmitting ? 'Sending...' : contactContent.form.buttonText}
                 </Button>
               </form>
             </Card>
@@ -137,35 +139,20 @@ export default function ContactPage() {
           <div>
             <h2 className="text-2xl font-bold mb-6">Our Office</h2>
             <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold mb-2">Address</h3>
-                <p className="text-muted-foreground">
-                  123 Business Park,<br />
-                  Gujarat, India
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Contact</h3>
-                <p className="text-muted-foreground">
-                  Email: contact@skapl.com<br />
-                  Phone: +91 123 456 7890
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Business Hours</h3>
-                <p className="text-muted-foreground">
-                  Monday - Friday: 9:00 AM - 6:00 PM<br />
-                  Saturday: 9:00 AM - 1:00 PM
-                </p>
-              </div>
+              {contactContent.info.sections.map((section, index) => (
+                <div key={index}>
+                  <h3 className="font-semibold mb-2">{section.title}</h3>
+                  <p className="text-muted-foreground whitespace-pre-line">
+                    {section.content}
+                  </p>
+                </div>
+              ))}
             </div>
 
             {/* Map */}
             <div className="mt-8 h-[300px] rounded-lg overflow-hidden">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3671.9014256899257!2d72.5008!3d23.0333!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDAyJzAwLjAiTiA3MsKwMzAnMDMuMCJF!5e0!3m2!1sen!2sin!4v1650000000000!5m2!1sen!2sin"
+                src={contactContent.info.mapUrl}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:no-streaming": "next dev --no-streaming",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "clean": "rimraf .next out",
+    "dev:clean": "npm run clean && npm run dev",
+    "dev:clean:no-streaming": "npm run clean && npm run dev:no-streaming",
     "firebase:login": "firebase login",
     "firebase:deploy:demo": "firebase deploy --only hosting:demo",
     "firebase:deploy:prod": "firebase deploy --only hosting:production",
@@ -77,5 +81,8 @@
     "utf-8-validate": "^6.0.5",
     "vaul": "^0.9.9",
     "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1"
   }
 }

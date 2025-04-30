@@ -1,0 +1,306 @@
+{
+  "global": {
+    "companyName": "SKAPL",
+    "tagline": "Building Sustainable Futures",
+    "contact": {
+      "email": "contact@skapl.com",
+      "phone": "+91 123 456 7890",
+      "address": "123 Business Park, Gujarat, India",
+      "businessHours": {
+        "weekday": "Monday - Friday: 9:00 AM - 6:00 PM",
+        "weekend": "Saturday: 9:00 AM - 1:00 PM"
+      }
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Vision is the art of seeing what is invisible to others",
+      "subtitle": "At SKAPL, we don't just build systems — we build sustainable futures.",
+      "backgroundImage": "https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&q=80"
+    },
+    "features": {
+      "title": "Why Choose SKAPL?",
+      "cards": [
+        {
+          "title": "Sustainable Solutions",
+          "icon": "Leaf",
+          "description": "We are driven by a passion for sustainability. Our solar installations help reduce energy costs and contribute to a greener planet.",
+          "benefits": [
+            "Lower electricity bills",
+            "Reduce carbon footprint",
+            "Long-term sustainable investment"
+          ]
+        },
+        {
+          "title": "Innovative Technology",
+          "icon": "Lightbulb",
+          "description": "We bring cutting-edge AI-driven tools and smart energy management systems to ensure the highest performance.",
+          "benefits": [
+            "AI-driven energy optimization",
+            "Real-time monitoring and analytics",
+            "Future-ready infrastructure"
+          ]
+        },
+        {
+          "title": "Expert Project Management",
+          "icon": "HardHat",
+          "description": "With over 30 years of combined experience, our team ensures precision and efficiency in every project.",
+          "benefits": [
+            "Over 30 years of industry experience",
+            "Streamlined project execution",
+            "End-to-end support"
+          ]
+        },
+        {
+          "title": "Trusted by Thousands",
+          "icon": "Users",
+          "description": "With over 3,200 satisfied customers, we have earned a reputation for delivering reliable energy solutions.",
+          "benefits": [
+            "3,200+ satisfied customers",
+            "Proven track record of success",
+            "Strong after-sales support"
+          ]
+        }
+      ]
+    }
+  },
+  "about": {
+    "mission": {
+      "title": "Our Mission",
+      "description": "SKAPL is a high-end energy consulting and project management firm specializing in the solar industry. As we expand our horizons, we're bringing innovative solutions to complex energy challenges, combining deep industry expertise with cutting-edge technology to drive sustainable transformation."
+    },
+    "values": {
+      "title": "Our Values",
+      "cards": [
+        {
+          "title": "Traditional Meets Modern",
+          "description": "We bridge time-tested business principles with modern technological innovation, creating solutions that honor experience while embracing the future."
+        },
+        {
+          "title": "East Meets West",
+          "description": "Our approach combines Eastern wisdom and values with Western efficiency and innovation, delivering comprehensive solutions that transcend cultural boundaries."
+        }
+      ]
+    },
+    "leadership": {
+      "title": "Our Leadership",
+      "members": [
+        {
+          "name": "Sanjib Kumar",
+          "role": "Founder & Managing Director",
+          "image": "https://media.licdn.com/dms/image/v2/C5603AQHLF8Zhf8p1Ng/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1517438344207?e=1750291200&v=beta&t=sqAQVowoUwi0eUXsgeztDaic41cNg781z6VkXSgi-c8",
+          "description": "A senior industry professional and the visionary behind both Swami Solar and SKAPL. With over 30 years of experience, including his tenure as General Manager at Essar Steel India Ltd, Sanjib has led large-scale industrial projects, greenfield implementations, and energy transformations.",
+          "impact": "Under his guidance, Swami Solar grew into a trusted solar partner across Gujarat, serving residential, commercial, and industrial sectors. As founder of SKAPL, Sanjib now brings this same spirit of excellence into a broader horizon — offering clients renewable solutions, industrial consulting, and digital energy transformation.",
+          "quote": "Vision without execution is just hallucination. We turn sustainable dreams into reality."
+        },
+        {
+          "name": "Vishrut Kumar",
+          "role": "Chief Technology Officer",
+          "image": "https://media.licdn.com/dms/image/v2/D4D03AQHz8-fBKSqI6A/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1682571802609?e=1750291200&v=beta&t=nN9JohjehryJnS7I5jvuLnQhSepLhn0VSTb-EpWPFg0",
+          "description": "A dynamic young leader with a flair for AI, data analytics, and full-stack development. Previously interned with VerSe Innovation (Dailyhunt) where he built internal analytics tools and optimized model pipelines for AI performance.",
+          "impact": "During his internship with Swami Solar, Vishrut redesigned the company's website, implemented a smart cost calculator, and worked on internal process analysis. As CTO, he now drives smart automation, system optimization, cloud architecture, and digital strategy, aligning SKAPL with modern industrial demands.",
+          "quote": "Technology is not just about innovation; it's about creating meaningful impact."
+        }
+      ]
+    },
+    "team": {
+      "title": "Our Team",
+      "members": [
+        {
+          "name": "Tom",
+          "role": "Chief Happiness Officer",
+          "quote": "Just be happy",
+          "image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80"
+        },
+        {
+          "name": "Sarah",
+          "role": "Business Development executive",
+          "quote": "My job is to make people happy :)",
+          "image": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80"
+        },
+        {
+          "name": "Clint",
+          "role": "Intern",
+          "quote": "I push horrible code on github and make it look like a masterpiece",
+          "image": "https://images.unsplash.com/photo-1610088441520-4352457e7095?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        }
+      ]
+    }
+  },
+  "services": {
+    "hero": {
+      "title": "Engineering Possibilities. Delivering Impact.",
+      "subtitle": "Strategic partners in your journey towards building resilient infrastructure, accelerating clean energy adoption, and managing complex projects with confidence.",
+      "backgroundImage": "https://images.unsplash.com/photo-1440342359743-84fcb8c21f21?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    },
+    "sections": [
+      {
+        "title": "Renewable Energy & Sustainability Advisory",
+        "icon": "Zap",
+        "subtitle": "Driving transitions that matter through comprehensive energy solutions and strategic planning.",
+        "services": [
+          {
+            "title": "Strategic Energy Planning",
+            "description": "Tailored roadmaps for integrating clean energy — including solar, wind, hybrid systems, and energy storage — into your operations."
+          },
+          {
+            "title": "Policy & Regulatory Guidance",
+            "description": "Expert navigation of national and global energy regulations to unlock project potential."
+          }
+        ]
+      },
+      {
+        "title": "Project Management & Execution Support",
+        "icon": "BarChart",
+        "subtitle": "From concept to commissioning — we lead with precision.",
+        "services": [
+          {
+            "title": "End-to-End Project Planning",
+            "description": "Structuring timelines, deliverables, and resource flows to meet your goals efficiently."
+          },
+          {
+            "title": "Risk & Quality Management",
+            "description": "Proven systems to manage uncertainty, control budgets, and uphold quality benchmarks."
+          }
+        ]
+      },
+      {
+        "title": "Infrastructure & Asset Development",
+        "icon": "Shield",
+        "subtitle": "Powering infrastructure that shapes the future.",
+        "services": [
+          {
+            "title": "Development Strategy",
+            "description": "Market intelligence, regulatory reviews, and financial modeling to de-risk your decisions."
+          },
+          {
+            "title": "Operations Optimization",
+            "description": "Performance diagnostics and process enhancements to extend asset life and improve ROI."
+          }
+        ]
+      }
+    ],
+    "whyChooseUs": {
+      "title": "Why Choose SKAPL?",
+      "icon": "Users",
+      "reasons": [
+        {
+          "title": "Multidisciplinary Expertise",
+          "description": "Bridging engineering, strategy, and policy across energy and infrastructure domains."
+        },
+        {
+          "title": "Client-First Approach",
+          "description": "Every engagement is tailored, transparent, and driven by your goals."
+        },
+        {
+          "title": "Innovation-Driven",
+          "description": "We apply the latest tools, trends, and insights to deliver future-ready solutions."
+        },
+        {
+          "title": "Global Perspective",
+          "description": "Combining international experience with region-specific knowledge for impactful delivery."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Let's Build What's Next — Together",
+      "description": "Whether you're a developer, investor, government body, or enterprise ready to transition, SKAPL is here to guide your most critical projects from ambition to achievement.",
+      "buttonText": "Reach out to start a conversation"
+    }
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "form": {
+      "namePlaceholder": "Your Name",
+      "emailPlaceholder": "Email Address",
+      "phonePlaceholder": "Phone Number (Optional)",
+      "messagePlaceholder": "Your Message",
+      "buttonText": "Send Message",
+      "successMessage": "Message sent successfully!"
+    },
+    "info": {
+      "sections": [
+        {
+          "title": "Address",
+          "content": "123 Business Park,\nGujarat, India"
+        },
+        {
+          "title": "Contact",
+          "content": "Email: contact@skapl.com\nPhone: +91 123 456 7890"
+        },
+        {
+          "title": "Business Hours",
+          "content": "Monday - Friday: 9:00 AM - 6:00 PM\nSaturday: 9:00 AM - 1:00 PM"
+        }
+      ],
+      "mapUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3671.9014256899257!2d72.5008!3d23.0333!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDAyJzAwLjAiTiA3MsKwMzAnMDMuMCJF!5e0!3m2!1sen!2sin!4v1650000000000!5m2!1sen!2sin"
+    }
+  },
+  "careers": {
+    "title": "Join Our Team",
+    "subtitle": "Be part of our mission to build sustainable futures through innovative energy solutions.",
+    "form": {
+      "namePlaceholder": "Your Name",
+      "emailPlaceholder": "Email Address",
+      "phonePlaceholder": "Phone Number (Optional)",
+      "positionLabel": "Select Position",
+      "resumeLabel": "Upload Resume (PDF, DOC, DOCX - Max 5MB)",
+      "coverLetterPlaceholder": "Cover Letter (Optional)",
+      "buttonText": "Submit Application",
+      "successMessage": "Application received! We'll reach out to you soon."
+    },
+    "positions": [
+      "Software Engineer",
+      "Project Manager",
+      "Business Analyst",
+      "UI/UX Designer",
+      "DevOps Engineer",
+      "QA Engineer",
+      "Data Scientist",
+      "Software Engineering Intern",
+      "UI/UX Design Intern",
+      "Business Analysis Intern",
+      "Other"
+    ],
+    "positionDetails": {
+      "type": "Full Time",
+      "location": "Gujarat, India",
+      "remote": "Remote Friendly",
+      "description": "We're looking for talented individuals to join our team and help shape the future of sustainable energy."
+    }
+  },
+  "blog": {
+    "title": "Insights & Resources",
+    "subtitle": "Stay updated with the latest trends, insights, and news in the energy and infrastructure sectors."
+  },
+  "footer": {
+    "description": "SKAPL is a leading energy consulting and project management firm specializing in sustainable solutions.",
+    "copyright": "© 2024 SKAPL. All rights reserved.",
+    "links": {
+      "company": {
+        "title": "Company",
+        "items": [
+          { "text": "About", "url": "/about" },
+          { "text": "Services", "url": "/services" },
+          { "text": "Careers", "url": "/careers" },
+          { "text": "Contact", "url": "/contact" }
+        ]
+      },
+      "legal": {
+        "title": "Legal",
+        "items": [
+          { "text": "Privacy Policy", "url": "/privacy" },
+          { "text": "Terms of Service", "url": "/terms" }
+        ]
+      },
+      "social": {
+        "title": "Social",
+        "items": [
+          { "text": "LinkedIn", "url": "https://linkedin.com" },
+          { "text": "Twitter", "url": "https://twitter.com" },
+          { "text": "Instagram", "url": "https://instagram.com" }
+        ]
+      }
+    }
+  }
+} 

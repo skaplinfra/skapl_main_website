@@ -5,12 +5,13 @@ import { Providers } from './providers';
 import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import Script from 'next/script';
+import content from '@/CONTENT.json';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'SKAPL - Building Sustainable Futures',
-  description: 'SKAPL is a leading energy consulting and project management firm specializing in sustainable solutions.',
+  title: `${content.global.companyName} - ${content.global.tagline}`,
+  description: content.footer.description,
   icons: {
     icon: [
       {
@@ -48,7 +49,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SKAPL'
+    title: content.global.companyName
   },
 };
 

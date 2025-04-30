@@ -4,9 +4,19 @@ import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Leaf, Lightbulb, HardHat, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import content from '@/CONTENT.json';
+
+// Helper function to dynamically import icons
+const iconComponents = {
+  Leaf,
+  Lightbulb,
+  HardHat,
+  Users
+};
 
 export default function Home() {
   const [isStatic, setIsStatic] = useState<string | undefined>(undefined);
+  const homeContent = content.home;
   
   useEffect(() => {
     setIsStatic(process.env.NEXT_PUBLIC_STATIC_EXPORT);
@@ -18,7 +28,7 @@ export default function Home() {
       {/* Hero Section */}
       <div className="relative h-[90vh] flex items-center justify-center">
         <Image
-          src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&q=80"
+          src={homeContent.hero.backgroundImage}
           alt="Modern Architecture"
           fill
           className="object-cover brightness-50"
@@ -26,10 +36,10 @@ export default function Home() {
         />
         <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Vision is the art of seeing what is invisible to others
+            {homeContent.hero.title}
           </h1>
           <p className="text-xl md:text-2xl text-white/90">
-            At SKAPL, we don't just build systems — we build sustainable futures.
+            {homeContent.hero.subtitle}
           </p>
           {isStatic !== undefined && (
             <p className="text-sm text-white/70 mt-4">
@@ -43,73 +53,29 @@ export default function Home() {
       <section className="py-24 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-16">
-            Why Choose SKAPL?
+            {homeContent.features.title}
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Sustainable Solutions */}
-            <Card className="p-6 flex flex-col items-center text-center">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Leaf className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Sustainable Solutions</h3>
-              <p className="text-muted-foreground mb-6">
-                We are driven by a passion for sustainability. Our solar installations help reduce energy costs and contribute to a greener planet.
-              </p>
-              <ul className="text-sm space-y-2 text-left">
-                <li>✓ Lower electricity bills</li>
-                <li>✓ Reduce carbon footprint</li>
-                <li>✓ Long-term sustainable investment</li>
-              </ul>
-            </Card>
-
-            {/* Innovative Technology */}
-            <Card className="p-6 flex flex-col items-center text-center">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Lightbulb className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Innovative Technology</h3>
-              <p className="text-muted-foreground mb-6">
-                We bring cutting-edge AI-driven tools and smart energy management systems to ensure the highest performance.
-              </p>
-              <ul className="text-sm space-y-2 text-left">
-                <li>✓ AI-driven energy optimization</li>
-                <li>✓ Real-time monitoring and analytics</li>
-                <li>✓ Future-ready infrastructure</li>
-              </ul>
-            </Card>
-
-            {/* Expert Project Management */}
-            <Card className="p-6 flex flex-col items-center text-center">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <HardHat className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Expert Project Management</h3>
-              <p className="text-muted-foreground mb-6">
-                With over 30 years of combined experience, our team ensures precision and efficiency in every project.
-              </p>
-              <ul className="text-sm space-y-2 text-left">
-                <li>✓ Over 30 years of industry experience</li>
-                <li>✓ Streamlined project execution</li>
-                <li>✓ End-to-end support</li>
-              </ul>
-            </Card>
-
-            {/* Trusted by Thousands */}
-            <Card className="p-6 flex flex-col items-center text-center">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Trusted by Thousands</h3>
-              <p className="text-muted-foreground mb-6">
-                With over 3,200 satisfied customers, we have earned a reputation for delivering reliable energy solutions.
-              </p>
-              <ul className="text-sm space-y-2 text-left">
-                <li>✓ 3,200+ satisfied customers</li>
-                <li>✓ Proven track record of success</li>
-                <li>✓ Strong after-sales support</li>
-              </ul>
-            </Card>
+            {homeContent.features.cards.map((feature, index) => {
+              const IconComponent = iconComponents[feature.icon as keyof typeof iconComponents];
+              return (
+                <Card key={index} className="p-6 flex flex-col items-center text-center">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    {IconComponent && <IconComponent className="h-6 w-6 text-primary" />}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
+                  <p className="text-muted-foreground mb-6">
+                    {feature.description}
+                  </p>
+                  <ul className="text-sm space-y-2 text-left">
+                    {feature.benefits.map((benefit, idx) => (
+                      <li key={idx}>✓ {benefit}</li>
+                    ))}
+                  </ul>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
