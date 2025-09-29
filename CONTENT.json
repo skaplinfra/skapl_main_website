@@ -14,53 +14,44 @@
   },
   "home": {
     "hero": {
-      "title": "Vision is the art of seeing what is invisible to others",
-      "subtitle": "At SKAPL, we don't just build systems — we build sustainable futures.",
+      "title": "Powering a Bold, Bright, and Sustainable Future",
+      "subtitle": "At SKAPL, We don’t just deliver solutions — we create foundations that last",
       "backgroundImage": "https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&q=80"
     },
     "features": {
-      "title": "Why Choose SKAPL?",
+      "title": "Why SKAPL?",
       "cards": [
         {
           "title": "Sustainable Solutions",
           "icon": "Leaf",
-          "description": "We are driven by a passion for sustainability. Our solar installations help reduce energy costs and contribute to a greener planet.",
+          "description": "Sustainable solutions with solar and storage combine clean, renewable power with advanced energy storage systems, ensuring reliable, affordable, and future-ready electricity. ",
           "benefits": [
-            "Lower electricity bills",
+            "Reliabe energy sources",
             "Reduce carbon footprint",
-            "Long-term sustainable investment"
+            "Resilient transition to a greener future"
+          ]
+        },
+           {
+          "title": " Project Management Consultancy",
+          "icon": "HardHat",
+          "description": "We provide end to end guidance, from planning and design to execution and delivery, ensuring projects are completed on time, within budget, and to the highest standards.",
+          "benefits": [
+            "Blend Expertise, Technology and Strategic oversight ",
+            "Optimized resource utilization and budgeting ",
+            "Value creation by ensuring long term benefits"
           ]
         },
         {
           "title": "Innovative Technology",
           "icon": "Lightbulb",
-          "description": "We bring cutting-edge AI-driven tools and smart energy management systems to ensure the highest performance.",
+          "description": "We leverage AI driven innovative technologies to design and deliver intelligent solutions that enhance efficiency, sustainability and user experience",
           "benefits": [
-            "AI-driven energy optimization",
+            "AI-driven methodology for applications",
             "Real-time monitoring and analytics",
             "Future-ready infrastructure"
           ]
-        },
-        {
-          "title": "Expert Project Management",
-          "icon": "HardHat",
-          "description": "With over 30 years of combined experience, our team ensures precision and efficiency in every project.",
-          "benefits": [
-            "Over 30 years of industry experience",
-            "Streamlined project execution",
-            "End-to-end support"
-          ]
-        },
-        {
-          "title": "Trusted by Thousands",
-          "icon": "Users",
-          "description": "With over 3,200 satisfied customers, we have earned a reputation for delivering reliable energy solutions.",
-          "benefits": [
-            "3,200+ satisfied customers",
-            "Proven track record of success",
-            "Strong after-sales support"
-          ]
         }
+     
       ]
     }
   },
