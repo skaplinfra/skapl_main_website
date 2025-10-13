@@ -9,6 +9,7 @@ import content from '@/CONTENT.json';
 
 const inter = Inter({ subsets: ['latin'] });
 
+
 export const metadata: Metadata = {
   title: `${content.global.companyName} - ${content.global.tagline}`,
   description: content.footer.description,
@@ -128,6 +129,11 @@ export default function RootLayout({
             <Footer />
           </div>
         </Providers>
+        {/* AI Chatbot Widget */}
+        <Script
+          src="https://cdn.klain.in/widget/68ec5a25963d7d16b0ebb8f4_1760320195288/embed.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
