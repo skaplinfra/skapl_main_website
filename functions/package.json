@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "20"
+    "node": "18"
   },
   "main": "index.js",
   "dependencies": {
@@ -12,7 +12,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "firebase-admin": "^11.8.0",
-    "firebase-functions": "^6.3.2",
+    "firebase-functions": "^4.9.0",
     "formidable": "^3.5.1",
     "googleapis": "^134.0.0",
     "node-fetch": "^2.6.12",
