@@ -87,13 +87,16 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gs_key.json
           
+      - name: Authenticate gcloud
+        run: |
+          gcloud auth activate-service-account --key-file=${{ github.workspace }}/gs_key.json
+          gcloud config set project skapl-prod
+          
       - name: Grant Firebase Hosting access to functions
         run: |
           # Grant Firebase Hosting service account access to invoke functions
-          gcloud functions add-iam-policy-binding career --region=us-central1 --member=serviceAccount:firebase-adminsdk-fbsvc@skapl-prod.iam.gserviceaccount.com --role=roles/cloudfunctions.invoker --project=skapl-prod || echo "IAM already set"
-          gcloud functions add-iam-policy-binding contact --region=us-central1 --member=serviceAccount:firebase-adminsdk-fbsvc@skapl-prod.iam.gserviceaccount.com --role=roles/cloudfunctions.invoker --project=skapl-prod || echo "IAM already set"
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gs_key.json
+          gcloud functions add-iam-policy-binding career --region=us-central1 --member=serviceAccount:firebase-adminsdk-fbsvc@skapl-prod.iam.gserviceaccount.com --role=roles/cloudfunctions.invoker --project=skapl-prod || echo "IAM policy update skipped"
+          gcloud functions add-iam-policy-binding contact --region=us-central1 --member=serviceAccount:firebase-adminsdk-fbsvc@skapl-prod.iam.gserviceaccount.com --role=roles/cloudfunctions.invoker --project=skapl-prod || echo "IAM policy update skipped"
 
       - name: Deploy Hosting to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
