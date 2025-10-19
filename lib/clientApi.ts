@@ -63,8 +63,30 @@ export async function submitContactForm(data: ContactFormData) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to submit form');
+      let errorMessage = 'Failed to submit form';
+      
+      try {
+        // Try to parse JSON error response
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch (parseError) {
+        // If JSON parsing fails, try to get text response
+        try {
+          const textError = await response.text();
+          // If it's HTML (starts with <), it's likely an error page
+          if (textError.startsWith('<')) {
+            console.error('Received HTML error page:', textError.substring(0, 200));
+            errorMessage = `Server error (${response.status}): ${response.statusText}`;
+          } else {
+            errorMessage = textError || errorMessage;
+          }
+        } catch (textError) {
+          // If all else fails, use status text
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();
@@ -102,8 +124,30 @@ export const submitCareerApplication = async (
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to submit application');
+    let errorMessage = 'Failed to submit application';
+    
+    try {
+      // Try to parse JSON error response
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch (parseError) {
+      // If JSON parsing fails, try to get text response
+      try {
+        const textError = await response.text();
+        // If it's HTML (starts with <), it's likely an error page
+        if (textError.startsWith('<')) {
+          console.error('Received HTML error page:', textError.substring(0, 200));
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        } else {
+          errorMessage = textError || errorMessage;
+        }
+      } catch (textError) {
+        // If all else fails, use status text
+        errorMessage = `Server error (${response.status}): ${response.statusText}`;
+      }
+    }
+    
+    throw new Error(errorMessage);
   }
 
   return response.json();

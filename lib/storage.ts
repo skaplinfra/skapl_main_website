@@ -4,18 +4,32 @@ import { readFileSync } from 'fs';
 // Initialize Google Cloud Storage
 const getStorageClient = () => {
   try {
-    const keyPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH;
+    let credentials;
     const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
-    
-    if (!keyPath) {
-      throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY_PATH is not set in environment variables');
-    }
 
     if (!projectId) {
       throw new Error('GOOGLE_CLOUD_PROJECT_ID is not set in environment variables');
     }
 
-    const credentials = JSON.parse(readFileSync(keyPath, 'utf-8'));
+    // Check if using file path (for local development)
+    const keyFilePath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH;
+    const keyString = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+
+    if (keyFilePath) {
+      // Use file path (local development)
+      credentials = JSON.parse(readFileSync(keyFilePath, 'utf-8'));
+    } else if (keyString) {
+      // Parse JSON string (production/deployment)
+      try {
+        credentials = JSON.parse(keyString);
+      } catch (parseError) {
+        console.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY. Make sure it is valid JSON.');
+        console.error('First 100 chars:', keyString.substring(0, 100));
+        throw new Error('Invalid JSON in GOOGLE_SERVICE_ACCOUNT_KEY');
+      }
+    } else {
+      throw new Error('Neither GOOGLE_SERVICE_ACCOUNT_KEY_PATH nor GOOGLE_SERVICE_ACCOUNT_KEY is set');
+    }
 
     return new Storage({
       projectId,

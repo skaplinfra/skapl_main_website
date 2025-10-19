@@ -25,23 +25,40 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify Turnstile token
-    const isValidToken = await verifyTurnstile(turnstileToken);
-    if (!isValidToken) {
+    try {
+      const isValidToken = await verifyTurnstile(turnstileToken);
+      if (!isValidToken) {
+        return NextResponse.json(
+          { error: 'Invalid captcha verification' },
+          { status: 400 }
+        );
+      }
+    } catch (turnstileError) {
+      console.error('Turnstile verification error:', turnstileError);
       return NextResponse.json(
-        { error: 'Invalid captcha verification' },
-        { status: 400 }
+        { error: 'Failed to verify captcha' },
+        { status: 500 }
       );
     }
 
     // Validate form data with Zod schema
-    const validatedData = CareerFormSchema.parse({
-      name,
-      email,
-      phone: phone || undefined,
-      position_applied,
-      cover_letter: cover_letter || undefined,
-      turnstileToken,
-    });
+    let validatedData;
+    try {
+      validatedData = CareerFormSchema.parse({
+        name,
+        email,
+        phone: phone || undefined,
+        position_applied,
+        cover_letter: cover_letter || undefined,
+        turnstileToken,
+      });
+    } catch (validationError) {
+      console.error('Validation error:', validationError);
+      return NextResponse.json(
+        { error: 'Invalid form data provided' },
+        { status: 400 }
+      );
+    }
 
     // Validate file
     if (resumeFile.size > 5 * 1024 * 1024) {
@@ -70,21 +87,46 @@ export async function POST(request: NextRequest) {
 
     // Upload resume to Google Cloud Storage
     console.log('Uploading resume to Cloud Storage...');
-    const resumeUrl = await uploadToCloudStorage(
-      resumeBuffer,
-      resumeFile.name,
-      resumeFile.type,
-      name
-    );
-    console.log('Resume uploaded successfully:', resumeUrl);
+    let resumeUrl;
+    try {
+      resumeUrl = await uploadToCloudStorage(
+        resumeBuffer,
+        resumeFile.name,
+        resumeFile.type,
+        name
+      );
+      console.log('Resume uploaded successfully:', resumeUrl);
+    } catch (uploadError) {
+      console.error('Failed to upload resume:', uploadError);
+      return NextResponse.json(
+        { error: 'Failed to upload resume file' },
+        { status: 500 }
+      );
+    }
 
     // Initialize sheet if needed (first time setup)
-    await initializeSheet();
+    try {
+      await initializeSheet();
+    } catch (initError) {
+      console.error('Failed to initialize sheet:', initError);
+      return NextResponse.json(
+        { error: 'Failed to initialize Google Sheet' },
+        { status: 500 }
+      );
+    }
 
     // Submit to Google Sheets
     console.log('Submitting to Google Sheets...');
-    await submitToGoogleSheets(validatedData, resumeUrl);
-    console.log('Sheet submission successful');
+    try {
+      await submitToGoogleSheets(validatedData, resumeUrl);
+      console.log('Sheet submission successful');
+    } catch (sheetError) {
+      console.error('Failed to submit to Google Sheets:', sheetError);
+      return NextResponse.json(
+        { error: 'Failed to submit application to Google Sheets' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
