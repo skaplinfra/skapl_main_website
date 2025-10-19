@@ -89,7 +89,10 @@ export async function submitContactForm(data: ContactFormData) {
       throw new Error(errorMessage);
     }
 
-    // Check if response is actually JSON before parsing (same as career form)
+    // Clone response before consuming it
+    const responseClone = response.clone();
+    
+    // Check if response is actually JSON before parsing
     try {
       const result = await response.json();
       return result;
@@ -99,7 +102,6 @@ export async function submitContactForm(data: ContactFormData) {
       
       // Try to get the response as text to see what we actually received
       try {
-        const responseClone = response.clone();
         const textResponse = await responseClone.text();
         
         // Check if it's HTML (common error page)
@@ -174,6 +176,9 @@ export const submitCareerApplication = async (
     throw new Error(errorMessage);
   }
 
+  // Clone the response before consuming it
+  const responseClone = response.clone();
+  
   try {
     // Try to parse JSON first
     const result = await response.json();
@@ -184,7 +189,6 @@ export const submitCareerApplication = async (
     
     // Try to get the response as text to see what we actually received
     try {
-      const responseClone = response.clone();
       const textResponse = await responseClone.text();
       
       // Check if it's HTML (common error page)

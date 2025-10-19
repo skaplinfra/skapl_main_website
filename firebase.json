@@ -28,6 +28,14 @@
     ],
     "rewrites": [
       {
+        "source": "/api/career",
+        "function": "career"
+      },
+      {
+        "source": "/api/contact",
+        "function": "contact"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
