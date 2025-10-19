@@ -7,7 +7,14 @@ import { Footer } from '@/components/layout/footer';
 import Script from 'next/script';
 import content from '@/CONTENT.json';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  fallback: ['system-ui', 'arial'],
+  preload: false, // Disable preload to avoid build-time network issues
+  variable: '--font-inter',
+  adjustFontFallback: false, // Disable to prevent build issues
+});
 const keyPathChatbot = process.env.KLIAN_CHATBOT_KEY;
 
 
@@ -120,7 +127,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className || 'font-sans'} ${inter.variable || ''}`}>
         <Providers>
           <div className="min-h-screen flex flex-col">
             <Navbar />
