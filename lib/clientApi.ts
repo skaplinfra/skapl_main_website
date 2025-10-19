@@ -150,7 +150,32 @@ export const submitCareerApplication = async (
     throw new Error(errorMessage);
   }
 
-  return response.json();
+  try {
+    // Try to parse JSON first
+    const result = await response.json();
+    return result;
+  } catch (jsonError) {
+    // If JSON parsing fails, it might be HTML or other content
+    console.error('Failed to parse JSON response:', jsonError);
+    
+    // Try to get the response as text to see what we actually received
+    try {
+      const responseClone = response.clone();
+      const textResponse = await responseClone.text();
+      
+      // Check if it's HTML (common error page)
+      if (textResponse.trim().startsWith('<')) {
+        console.error('Received HTML response instead of JSON:', textResponse.substring(0, 200));
+        throw new Error('Server returned HTML error page instead of JSON response');
+      } else {
+        console.error('Response content:', textResponse.substring(0, 200));
+        throw new Error(`Server returned invalid response format: ${textResponse.substring(0, 100)}...`);
+      }
+    } catch (textError) {
+      console.error('Failed to read response body:', textError);
+      throw new Error('Server returned invalid response and could not read error details');
+    }
+  }
 };
 
 // Fetch Medium posts

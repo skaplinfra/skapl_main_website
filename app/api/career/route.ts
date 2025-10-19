@@ -4,9 +4,29 @@ import { submitToGoogleSheets, verifyTurnstile, initializeSheet } from '@/lib/sh
 import { uploadToCloudStorage } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
+  // Ensure we always return JSON responses
+  const sendJsonResponse = (data: any, status: number = 200) => {
+    return new NextResponse(JSON.stringify(data), {
+      status,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+      },
+    });
+  };
+
   try {
     // Parse form data
-    const formData = await request.formData();
+    let formData;
+    try {
+      formData = await request.formData();
+    } catch (formError) {
+      console.error('Failed to parse form data:', formError);
+      return sendJsonResponse(
+        { error: 'Invalid form data received' },
+        400
+      );
+    }
     
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
@@ -18,9 +38,9 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!name || !email || !position_applied || !turnstileToken || !resumeFile) {
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'Missing required fields' },
-        { status: 400 }
+        400
       );
     }
 
@@ -28,16 +48,16 @@ export async function POST(request: NextRequest) {
     try {
       const isValidToken = await verifyTurnstile(turnstileToken);
       if (!isValidToken) {
-        return NextResponse.json(
+        return sendJsonResponse(
           { error: 'Invalid captcha verification' },
-          { status: 400 }
+          400
         );
       }
     } catch (turnstileError) {
       console.error('Turnstile verification error:', turnstileError);
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'Failed to verify captcha' },
-        { status: 500 }
+        500
       );
     }
 
@@ -54,17 +74,17 @@ export async function POST(request: NextRequest) {
       });
     } catch (validationError) {
       console.error('Validation error:', validationError);
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'Invalid form data provided' },
-        { status: 400 }
+        400
       );
     }
 
     // Validate file
     if (resumeFile.size > 5 * 1024 * 1024) {
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'File size must be less than 5MB' },
-        { status: 400 }
+        400
       );
     }
 
@@ -75,9 +95,9 @@ export async function POST(request: NextRequest) {
     ];
 
     if (!allowedTypes.includes(resumeFile.type)) {
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'Only PDF and DOC files are allowed' },
-        { status: 400 }
+        400
       );
     }
 
@@ -98,9 +118,9 @@ export async function POST(request: NextRequest) {
       console.log('Resume uploaded successfully:', resumeUrl);
     } catch (uploadError) {
       console.error('Failed to upload resume:', uploadError);
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'Failed to upload resume file' },
-        { status: 500 }
+        500
       );
     }
 
@@ -109,9 +129,9 @@ export async function POST(request: NextRequest) {
       await initializeSheet();
     } catch (initError) {
       console.error('Failed to initialize sheet:', initError);
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'Failed to initialize Google Sheet' },
-        { status: 500 }
+        500
       );
     }
 
@@ -122,13 +142,13 @@ export async function POST(request: NextRequest) {
       console.log('Sheet submission successful');
     } catch (sheetError) {
       console.error('Failed to submit to Google Sheets:', sheetError);
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'Failed to submit application to Google Sheets' },
-        { status: 500 }
+        500
       );
     }
 
-    return NextResponse.json({
+    return sendJsonResponse({
       success: true,
       message: 'Application submitted successfully',
     });
@@ -136,15 +156,15 @@ export async function POST(request: NextRequest) {
     console.error('Error processing career application:', error);
     
     if (error instanceof Error) {
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: error.message },
-        { status: 500 }
+        500
       );
     }
     
-    return NextResponse.json(
+    return sendJsonResponse(
       { error: 'Failed to submit application' },
-      { status: 500 }
+      500
     );
   }
 }
