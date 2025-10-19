@@ -58,20 +58,23 @@ jobs:
         run: |
           echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > gs_key.json
 
-      - name: Prepare Firebase Functions environment
+      - name: Prepare Firebase Functions environment files
         run: |
           cd functions
-          cat << EOF > .env
-          FIREBASE_SERVICE_ACCOUNT_KEY=${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-          GOOGLE_SERVICE_ACCOUNT_KEY=${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
-          TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}
-          TURNSTILE_CAREER_SECRET_KEY=${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}
-          GOOGLE_CLOUD_PROJECT_ID=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
-          GOOGLE_CLOUD_STORAGE_BUCKET=${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}
-          GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}
-          GOOGLE_SHEET_ID_CRP=${{ secrets.GOOGLE_SHEET_ID_CRP }}
-          KLIAN_CHATBOT_KEY=${{ secrets.KLIAN_CHATBOT_KEY }}
-          EOF
+          # Create service account files that functions will use at runtime
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > firebase-service-account.json
+          echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > google-service-account.json
+          
+          # Create .env file with non-JSON environment variables
+          echo "TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}" > .env
+          echo "TURNSTILE_CAREER_SECRET_KEY=${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}" >> .env
+          echo "GOOGLE_CLOUD_PROJECT_ID=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}" >> .env
+          echo "GOOGLE_CLOUD_STORAGE_BUCKET=${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}" >> .env
+          echo "GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}" >> .env
+          echo "GOOGLE_SHEET_ID_CRP=${{ secrets.GOOGLE_SHEET_ID_CRP }}" >> .env
+          echo "KLIAN_CHATBOT_KEY=${{ secrets.KLIAN_CHATBOT_KEY }}" >> .env
+          echo "FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json" >> .env
+          echo "GOOGLE_SERVICE_ACCOUNT_PATH=./google-service-account.json" >> .env
           cd ..
 
       - name: Install Firebase CLI
@@ -81,7 +84,7 @@ jobs:
         run: firebase deploy --only functions --force --project skapl-prod
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          GOOGLE_APPLICATION_CREDENTIALS: gs_key.json
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gs_key.json
 
       - name: Deploy Hosting to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -101,6 +104,8 @@ jobs:
           rm -f gs_key.json
           rm -f .env.production
           rm -f functions/.env
+          rm -f functions/firebase-service-account.json
+          rm -f functions/google-service-account.json
 
       - name: Deploy success notification
         if: success()

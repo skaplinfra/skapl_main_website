@@ -1,6 +1,7 @@
 const functions = require('firebase-functions/v2');
 const admin = require('./admin');
 const cors = require('cors')({ origin: true });
+const fs = require('fs');
 
 // Load environment variables
 require('dotenv').config();
@@ -80,9 +81,20 @@ exports.career = functions.https.onRequest(
       }
 
       // Upload resume to Google Cloud Storage
+      let storageCredentials;
+      
+      // Try to read from file first (deployed functions), then from env var (local dev)
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH)) {
+        storageCredentials = JSON.parse(fs.readFileSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH, 'utf8'));
+      } else if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+        storageCredentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+      } else {
+        throw new Error('Missing Google Cloud service account credentials');
+      }
+      
       const storage = new Storage({
         projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-        credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY),
+        credentials: storageCredentials,
       });
 
       const bucket = storage.bucket(process.env.GOOGLE_CLOUD_STORAGE_BUCKET);
@@ -90,7 +102,6 @@ exports.career = functions.https.onRequest(
       const fileName = `resumes/${name.replace(/[^a-z0-9]/gi, '_')}_${timestamp}_${resumeFile.originalFilename}`;
       const file = bucket.file(fileName);
 
-      const fs = require('fs');
       const fileBuffer = fs.readFileSync(resumeFile.filepath);
       
       await file.save(fileBuffer, {
@@ -103,8 +114,17 @@ exports.career = functions.https.onRequest(
       const resumeUrl = `https://storage.googleapis.com/${process.env.GOOGLE_CLOUD_STORAGE_BUCKET}/${fileName}`;
 
       // Submit to Google Sheets
+      let sheetsCredentials;
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH)) {
+        sheetsCredentials = JSON.parse(fs.readFileSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH, 'utf8'));
+      } else if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+        sheetsCredentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+      } else {
+        throw new Error('Missing Google service account credentials');
+      }
+      
       const auth = new google.auth.GoogleAuth({
-        credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY),
+        credentials: sheetsCredentials,
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
       });
 
@@ -228,8 +248,18 @@ exports.contact = functions.https.onRequest(
 
       // Submit to Google Sheets
       const { google } = require('googleapis');
+      
+      let sheetsCredentials;
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH)) {
+        sheetsCredentials = JSON.parse(fs.readFileSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH, 'utf8'));
+      } else if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+        sheetsCredentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+      } else {
+        throw new Error('Missing Google service account credentials');
+      }
+      
       const auth = new google.auth.GoogleAuth({
-        credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY),
+        credentials: sheetsCredentials,
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
       });
 
