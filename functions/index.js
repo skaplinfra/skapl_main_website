@@ -84,8 +84,9 @@ exports.career = functions.https.onRequest(
       let storageCredentials;
       
       // Try to read from file first (deployed functions), then from env var (local dev)
-      if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH)) {
-        storageCredentials = JSON.parse(fs.readFileSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH, 'utf8'));
+      // Note: Using GCS_SERVICE_ACCOUNT_PATH instead of GOOGLE_* to avoid Firebase reserved prefix
+      if (process.env.GCS_SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.GCS_SERVICE_ACCOUNT_PATH)) {
+        storageCredentials = JSON.parse(fs.readFileSync(process.env.GCS_SERVICE_ACCOUNT_PATH, 'utf8'));
       } else if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
         storageCredentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
       } else {
@@ -93,11 +94,11 @@ exports.career = functions.https.onRequest(
       }
       
       const storage = new Storage({
-        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+        projectId: process.env.GCP_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT_ID,
         credentials: storageCredentials,
       });
 
-      const bucket = storage.bucket(process.env.GOOGLE_CLOUD_STORAGE_BUCKET);
+      const bucket = storage.bucket(process.env.GCS_BUCKET || process.env.GOOGLE_CLOUD_STORAGE_BUCKET);
       const timestamp = Date.now();
       const fileName = `resumes/${name.replace(/[^a-z0-9]/gi, '_')}_${timestamp}_${resumeFile.originalFilename}`;
       const file = bucket.file(fileName);
@@ -111,12 +112,14 @@ exports.career = functions.https.onRequest(
       });
 
       await file.makePublic();
-      const resumeUrl = `https://storage.googleapis.com/${process.env.GOOGLE_CLOUD_STORAGE_BUCKET}/${fileName}`;
+      const bucket_name = process.env.GCS_BUCKET || process.env.GOOGLE_CLOUD_STORAGE_BUCKET;
+      const resumeUrl = `https://storage.googleapis.com/${bucket_name}/${fileName}`;
 
       // Submit to Google Sheets
       let sheetsCredentials;
-      if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH)) {
-        sheetsCredentials = JSON.parse(fs.readFileSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH, 'utf8'));
+      // Note: Using SERVICE_ACCOUNT_PATH instead of GOOGLE_* to avoid Firebase reserved prefix
+      if (process.env.SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.SERVICE_ACCOUNT_PATH)) {
+        sheetsCredentials = JSON.parse(fs.readFileSync(process.env.SERVICE_ACCOUNT_PATH, 'utf8'));
       } else if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
         sheetsCredentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
       } else {
@@ -129,7 +132,7 @@ exports.career = functions.https.onRequest(
       });
 
       const sheets = google.sheets({ version: 'v4', auth });
-      const sheetId = process.env.GOOGLE_SHEET_ID_CRP;
+      const sheetId = process.env.GSHEET_ID_CRP || process.env.GOOGLE_SHEET_ID_CRP;
 
       // Initialize sheet with headers if needed
       const checkHeaders = await sheets.spreadsheets.values.get({
@@ -250,8 +253,9 @@ exports.contact = functions.https.onRequest(
       const { google } = require('googleapis');
       
       let sheetsCredentials;
-      if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH)) {
-        sheetsCredentials = JSON.parse(fs.readFileSync(process.env.GOOGLE_SERVICE_ACCOUNT_PATH, 'utf8'));
+      // Note: Using SERVICE_ACCOUNT_PATH instead of GOOGLE_* to avoid Firebase reserved prefix
+      if (process.env.SERVICE_ACCOUNT_PATH && fs.existsSync(process.env.SERVICE_ACCOUNT_PATH)) {
+        sheetsCredentials = JSON.parse(fs.readFileSync(process.env.SERVICE_ACCOUNT_PATH, 'utf8'));
       } else if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
         sheetsCredentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
       } else {
@@ -264,7 +268,7 @@ exports.contact = functions.https.onRequest(
       });
 
       const sheets = google.sheets({ version: 'v4', auth });
-      const sheetId = process.env.GOOGLE_SHEET_ID;
+      const sheetId = process.env.GSHEET_ID || process.env.GOOGLE_SHEET_ID;
 
       // Initialize sheet with headers if needed
       const checkHeaders = await sheets.spreadsheets.values.get({

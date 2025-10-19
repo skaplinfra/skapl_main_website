@@ -66,15 +66,16 @@ jobs:
           echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > google-service-account.json
           
           # Create .env file with non-JSON environment variables
+          # Note: Cannot use FIREBASE_* or GOOGLE_* or X_GOOGLE_* or EXT_* prefixes (reserved by Firebase)
           echo "TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}" > .env
           echo "TURNSTILE_CAREER_SECRET_KEY=${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}" >> .env
-          echo "GOOGLE_CLOUD_PROJECT_ID=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}" >> .env
-          echo "GOOGLE_CLOUD_STORAGE_BUCKET=${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}" >> .env
-          echo "GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}" >> .env
-          echo "GOOGLE_SHEET_ID_CRP=${{ secrets.GOOGLE_SHEET_ID_CRP }}" >> .env
+          echo "GCP_PROJECT_ID=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}" >> .env
+          echo "GCS_BUCKET=${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}" >> .env
+          echo "GSHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}" >> .env
+          echo "GSHEET_ID_CRP=${{ secrets.GOOGLE_SHEET_ID_CRP }}" >> .env
           echo "KLIAN_CHATBOT_KEY=${{ secrets.KLIAN_CHATBOT_KEY }}" >> .env
-          echo "FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json" >> .env
-          echo "GOOGLE_SERVICE_ACCOUNT_PATH=./google-service-account.json" >> .env
+          echo "SERVICE_ACCOUNT_PATH=./firebase-service-account.json" >> .env
+          echo "GCS_SERVICE_ACCOUNT_PATH=./google-service-account.json" >> .env
           cd ..
 
       - name: Install Firebase CLI
