@@ -15,7 +15,6 @@ const inter = Inter({
   variable: '--font-inter',
   adjustFontFallback: false, // Disable to prevent build issues
 });
-const keyPathChatbot = process.env.KLIAN_CHATBOT_KEY;
 
 
 export const metadata: Metadata = {
@@ -139,7 +138,7 @@ export default function RootLayout({
         </Providers>
         {/* AI Chatbot Widget */}
          <Script
-        src={`https://cdn.klain.in/widget/${keyPathChatbot}/embed.js`}
+        src="https://cdn.klain.in/widget/68ec5a25963d7d16b0ebb8f4_1760320195288/embed.js"
         strategy="afterInteractive"
       />
       </body>

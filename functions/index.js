@@ -1,4 +1,4 @@
-const functions = require('firebase-functions/v2');
+const functions = require('firebase-functions');
 const admin = require('./admin');
 const cors = require('cors')({ origin: true });
 const fs = require('fs');
@@ -15,14 +15,13 @@ const corsHandler = (handler) => (req, res) => {
  * Career Form Submission API
  * Handles career applications with resume upload
  */
-exports.career = functions.https.onRequest(
-  { 
-    region: 'us-central1',
+exports.career = functions
+  .region('us-central1')
+  .runWith({
     timeoutSeconds: 120,
-    memory: '512MiB',
-    invoker: 'public'
-  },
-  corsHandler(async (req, res) => {
+    memory: '512MB'
+  })
+  .https.onRequest(corsHandler(async (req, res) => {
     // Only allow POST requests
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
@@ -201,21 +200,19 @@ exports.career = functions.https.onRequest(
         error: error.message || 'Failed to submit application',
       });
     }
-  })
-);
+  }));
 
 /**
  * Contact Form Submission API
  * Handles contact form submissions
  */
-exports.contact = functions.https.onRequest(
-  { 
-    region: 'us-central1',
+exports.contact = functions
+  .region('us-central1')
+  .runWith({
     timeoutSeconds: 60,
-    memory: '256MiB',
-    invoker: 'public'
-  },
-  corsHandler(async (req, res) => {
+    memory: '256MB'
+  })
+  .https.onRequest(corsHandler(async (req, res) => {
     // Only allow POST requests
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
@@ -336,6 +333,5 @@ exports.contact = functions.https.onRequest(
         error: error.message || 'Failed to submit contact form',
       });
     }
-  })
-);
+  }));
 
