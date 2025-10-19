@@ -17,7 +17,7 @@ const corsHandler = (handler) => (req, res) => {
  */
 exports.career = functions.https.onRequest(
   { 
-    region: 'asia-south1',
+    region: 'us-central1',
     timeoutSeconds: 120,
     memory: '512MiB'
   },
@@ -209,7 +209,7 @@ exports.career = functions.https.onRequest(
  */
 exports.contact = functions.https.onRequest(
   { 
-    region: 'asia-south1',
+    region: 'us-central1',
     timeoutSeconds: 60,
     memory: '256MiB'
   },

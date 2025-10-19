@@ -113,4 +113,4 @@ jobs:
         run: |
           echo "🚀 Deployment successful!"
           echo "📦 Hosting URL: https://skapl-prod.web.app"
-          echo "⚡ Functions deployed to asia-south1"
+          echo "⚡ Functions deployed to us-central1"
