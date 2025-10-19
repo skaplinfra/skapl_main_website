@@ -33,8 +33,8 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-muted-foreground">
               <li>contact@skapl.com</li>
-              <li>+91 123 456 7890</li>
-              <li>123 Business Park,<br />Gujarat, India</li>
+              <li>+91 6363300743 </li>
+              <li>Bengaluru,<br />Karnataka, India</li>
             </ul>
           </div>
           

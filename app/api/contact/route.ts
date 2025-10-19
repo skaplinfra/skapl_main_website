@@ -1,76 +1,76 @@
-import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { ContactFormSchema } from '@/lib/schemas';
+import { NextRequest, NextResponse } from 'next/server';
+import { appendToSheet, initializeSheet } from '@/lib/google';
+import { ContactFormData } from '@/lib/schemas';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    // Get the request body
     const body = await request.json();
-    
-    // Validate the form data
-    const result = ContactFormSchema.safeParse(body);
-    if (!result.success) {
+
+    // Validate required fields
+    if (!body.name || !body.email || !body.message || !body.turnstileToken) {
       return NextResponse.json(
-        { error: 'Invalid form data', details: result.error.format() },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
-    
-    const { name, email, phone, message, turnstileToken } = result.data;
-    
+
     // Verify Turnstile token
-    const verifyURL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-    const formData = new URLSearchParams();
-    formData.append('secret', process.env.TURNSTILE_CONTACT_SECRET_KEY || '');
-    formData.append('response', turnstileToken);
-    
-    const verifyResponse = await fetch(verifyURL, {
-      method: 'POST',
-      body: formData,
-    });
-    
-    const verifyData = await verifyResponse.json();
-    
-    if (!verifyData.success) {
-      console.error('Turnstile verification failed:', verifyData);
+    const turnstileSecret = process.env.TURNSTILE_CONTACT_SECRET_KEY;
+    if (!turnstileSecret) {
+      console.error('TURNSTILE_CONTACT_SECRET_KEY not configured');
       return NextResponse.json(
-        { error: 'Security verification failed' },
-        { status: 400 }
-      );
-    }
-    
-    // Insert data into Supabase
-    const { data, error } = await supabase
-      .from('contact_submissions')
-      .insert([
-        {
-          name,
-          email,
-          phone: phone || null,
-          message
-        }
-      ])
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Database error', details: error.message },
+        { error: 'Server configuration error' },
         { status: 500 }
       );
     }
-    
-    // Log the successful submission
-    console.log('Contact form submitted successfully:', data);
-    
-    return NextResponse.json({ success: true, data });
-    
-  } catch (error) {
-    console.error('Contact form submission error:', error);
+
+    const turnstileResponse = await fetch(
+      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          secret: turnstileSecret,
+          response: body.turnstileToken,
+        }),
+      }
+    );
+
+    const turnstileResult = await turnstileResponse.json();
+
+    if (!turnstileResult.success) {
+      return NextResponse.json(
+        { error: 'Security verification failed' },
+        { status: 403 }
+      );
+    }
+
+    // Initialize sheet if needed (only on first run)
+    await initializeSheet();
+
+    // Prepare form data
+    const formData: ContactFormData = {
+      name: body.name,
+      email: body.email,
+      phone: body.phone || '',
+      message: body.message,
+      turnstileToken: body.turnstileToken,
+    };
+
+    // Save to Google Sheet
+    await appendToSheet(formData);
+
     return NextResponse.json(
-      { error: 'Server error' },
+      { success: true, message: 'Form submitted successfully' },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Error processing contact form:', error);
+    return NextResponse.json(
+      { error: 'Failed to process form submission' },
       { status: 500 }
     );
   }
-} 
+}

@@ -1,81 +1,108 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { CareerFormSchema } from '@/lib/schemas';
-import { supabase } from '@/lib/supabase';
+import { submitToGoogleSheets, verifyTurnstile, initializeSheet } from '@/lib/sheets';
+import { uploadToCloudStorage } from '@/lib/storage';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    // Parse the request body
-    const body = await request.json();
+    // Parse form data
+    const formData = await request.formData();
     
-    // Validate the data against our schema
-    const result = CareerFormSchema.safeParse(body);
-    if (!result.success) {
-      console.error('Career form validation failed:', result.error);
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Invalid form data' 
-      }, { status: 400 });
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const phone = formData.get('phone') as string | null;
+    const position_applied = formData.get('position_applied') as string;
+    const cover_letter = formData.get('cover_letter') as string | null;
+    const turnstileToken = formData.get('turnstileToken') as string;
+    const resumeFile = formData.get('resume') as File;
+
+    // Validate required fields
+    if (!name || !email || !position_applied || !turnstileToken || !resumeFile) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
-    
-    const { turnstileToken, ...formData } = result.data;
-    
-    // Verify the Turnstile token
-    const verificationResponse = await fetch(
-      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          secret: process.env.TURNSTILE_CAREER_SECRET_KEY,
-          response: turnstileToken,
-        }),
-      }
-    );
-    
-    const verification = await verificationResponse.json();
-    if (!verification.success) {
-      console.error('Turnstile verification failed:', verification);
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Security check failed' 
-      }, { status: 400 });
+
+    // Verify Turnstile token
+    const isValidToken = await verifyTurnstile(turnstileToken);
+    if (!isValidToken) {
+      return NextResponse.json(
+        { error: 'Invalid captcha verification' },
+        { status: 400 }
+      );
     }
-    
-    // Store the submission in Supabase
-    const { data, error } = await supabase
-      .from('career_applications')
-      .insert({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone || null,
-        position_applied: formData.position_applied,
-        cover_letter: formData.cover_letter || null,
-        // Note: Resume URL would be handled separately with file upload
-      })
-      .select();
-    
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Failed to store your application' 
-      }, { status: 500 });
-    }
-    
-    // Return success response
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Application received successfully',
-      data: data[0]
+
+    // Validate form data with Zod schema
+    const validatedData = CareerFormSchema.parse({
+      name,
+      email,
+      phone: phone || undefined,
+      position_applied,
+      cover_letter: cover_letter || undefined,
+      turnstileToken,
     });
-    
+
+    // Validate file
+    if (resumeFile.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'File size must be less than 5MB' },
+        { status: 400 }
+      );
+    }
+
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+
+    if (!allowedTypes.includes(resumeFile.type)) {
+      return NextResponse.json(
+        { error: 'Only PDF and DOC files are allowed' },
+        { status: 400 }
+      );
+    }
+
+    // Convert file to buffer
+    const arrayBuffer = await resumeFile.arrayBuffer();
+    const resumeBuffer = Buffer.from(arrayBuffer);
+
+    // Upload resume to Google Cloud Storage
+    console.log('Uploading resume to Cloud Storage...');
+    const resumeUrl = await uploadToCloudStorage(
+      resumeBuffer,
+      resumeFile.name,
+      resumeFile.type,
+      name
+    );
+    console.log('Resume uploaded successfully:', resumeUrl);
+
+    // Initialize sheet if needed (first time setup)
+    await initializeSheet();
+
+    // Submit to Google Sheets
+    console.log('Submitting to Google Sheets...');
+    await submitToGoogleSheets(validatedData, resumeUrl);
+    console.log('Sheet submission successful');
+
+    return NextResponse.json({
+      success: true,
+      message: 'Application submitted successfully',
+    });
   } catch (error) {
-    console.error('Career form API error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Server error processing your application' 
-    }, { status: 500 });
+    console.error('Error processing career application:', error);
+    
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
+    }
+    
+    return NextResponse.json(
+      { error: 'Failed to submit application' },
+      { status: 500 }
+    );
   }
-} 
+}

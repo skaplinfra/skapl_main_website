@@ -1,7 +1,6 @@
 'use client';
 
 // Client-side API wrapper for static export
-import { supabase } from '@/lib/supabase';
 import { z } from 'zod';
 import { ContactFormSchema, CareerFormSchema, ContactFormData, CareerFormData } from '@/lib/schemas';
 
@@ -53,162 +52,62 @@ export async function verifyTurnstileToken(token: string, formType: 'contact' | 
 /**
  * Submits a contact form directly to Supabase or simulates for static site
  */
-export async function submitContactForm(formData: ContactFormData): Promise<SubmitFormResponse> {
-  console.log('Submitting contact form:', formData);
-  
-  // For static sites (like Firebase hosting), simulate success
-  if (typeof window !== 'undefined' && 
-      (window.location.hostname.includes('web.app') || 
-       process.env.NEXT_PUBLIC_STATIC_EXPORT === 'true')) {
-    console.log("Static site detected - simulating contact form submission");
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    return {
-      success: true,
-      message: 'Your message has been sent successfully (demo mode)!',
-    };
-  }
-  
+export async function submitContactForm(data: ContactFormData) {
   try {
-    // Verify Turnstile token first
-    const isValidToken = await verifyTurnstileToken(formData.turnstileToken, 'contact');
-    if (!isValidToken) {
-      throw new Error('Security verification failed. Please try again.');
+    const response = await fetch('/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to submit form');
     }
-    
-    // Use Supabase client directly instead of going through API
-    const { data, error } = await supabase
-      .from('contact_submissions')
-      .insert([
-        {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone || null,
-          message: formData.message
-        }
-      ])
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Supabase error:', error);
-      throw new Error(error.message || 'Database error');
-    }
-    
-    console.log('Contact form submitted successfully:', data);
-    
-    return {
-      success: true,
-      message: 'Your message has been sent successfully!',
-    };
+
+    const result = await response.json();
+    return result;
   } catch (error) {
-    console.error('Error in submitContactForm:', error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : 'An error occurred while submitting the form',
-    };
+    console.error('Error submitting form:', error);
+    throw error;
   }
 }
 
 /**
  * Submits a career application directly to Supabase or simulates for static site
  */
-export async function submitCareerApplication(formData: CareerFormData, resume: File): Promise<SubmitFormResponse> {
-  console.log('Submitting career application:', formData);
-  
-  // For static sites (like Firebase hosting), simulate success
-  if (typeof window !== 'undefined' && 
-      (window.location.hostname.includes('web.app') || 
-       process.env.NEXT_PUBLIC_STATIC_EXPORT === 'true')) {
-    console.log("Static site detected - simulating career application", {
-      formData,
-      file: {
-        name: resume.name,
-        type: resume.type,
-        size: resume.size + ' bytes'
-      }
-    });
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    return {
-      success: true,
-      message: 'Your application has been received successfully (demo mode)!',
-    };
+export const submitCareerApplication = async (
+  formData: CareerFormData,
+  resumeFile: File
+): Promise<void> => {
+  // Create FormData for file upload
+  const uploadFormData = new FormData();
+  uploadFormData.append('name', formData.name);
+  uploadFormData.append('email', formData.email);
+  if (formData.phone) {
+    uploadFormData.append('phone', formData.phone);
   }
-  
-  try {
-    // Verify Turnstile token first
-    const isValidToken = await verifyTurnstileToken(formData.turnstileToken, 'career');
-    if (!isValidToken) {
-      throw new Error('Security verification failed. Please try again.');
-    }
-    
-    // 1. Upload the resume file to Supabase Storage
-    let resumeUrl = '';
-    try {
-      const fileExt = resume.name.split('.').pop();
-      const fileName = `${Date.now()}-${formData.name.replace(/\s+/g, '-').toLowerCase()}.${fileExt}`;
-      const filePath = `${fileName}`;
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('resumes')
-        .upload(filePath, resume);
-      
-      if (uploadError) {
-        console.error('Resume upload error:', uploadError);
-        throw new Error('Failed to upload resume: ' + uploadError.message);
-      }
-      
-      // Get the public URL
-      const { data: urlData } = supabase.storage
-        .from('resumes')
-        .getPublicUrl(filePath);
-        
-      resumeUrl = urlData.publicUrl;
-    } catch (uploadError) {
-      console.error('Error uploading file:', uploadError);
-      throw new Error('Failed to upload resume file');
-    }
-    
-    // 2. Store the application data in Supabase
-    const { data, error } = await supabase
-      .from('career_applications')
-      .insert([
-        {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone || null,
-          position_applied: formData.position_applied,
-          cover_letter: formData.cover_letter || null,
-          resume_url: resumeUrl
-        }
-      ])
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Supabase error:', error);
-      throw new Error(error.message || 'Database error');
-    }
-    
-    console.log('Career application submitted successfully:', data);
-    
-    return {
-      success: true,
-      message: 'Your application has been submitted successfully!',
-    };
-  } catch (error) {
-    console.error('Error in submitCareerApplication:', error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : 'An error occurred while submitting your application',
-    };
+  uploadFormData.append('position_applied', formData.position_applied);
+  if (formData.cover_letter) {
+    uploadFormData.append('cover_letter', formData.cover_letter);
   }
-}
+  uploadFormData.append('turnstileToken', formData.turnstileToken);
+  uploadFormData.append('resume', resumeFile);
+
+  const response = await fetch('/api/career', {
+    method: 'POST',
+    body: uploadFormData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to submit application');
+  }
+
+  return response.json();
+};
 
 // Fetch Medium posts
 export async function fetchMediumPosts(): Promise<ClientMediumPost[]> {
@@ -275,11 +174,9 @@ export async function testSupabaseConnection(): Promise<boolean> {
   try {
     console.log('Testing Supabase connection...');
     
-    // Try to list all tables
-    const { data, error } = await supabase
-      .from('contact_submissions')
-      .select('*')
-      .limit(1);
+    // Supabase removed; return true to avoid blocking UI in this new flow
+    const data: unknown[] = [];
+    const error = null as unknown as Error | null;
       
     if (error) {
       console.error('Supabase test error:', error);
