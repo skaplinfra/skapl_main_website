@@ -1,129 +1,46 @@
 {
-  "hosting": [
-    {
-      "target": "demo",
-      "public": "out",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "cleanUrls": true,
-      "trailingSlash": true,
-      "rewrites": [
-        {
-          "source": "/api/mediumPosts",
-          "function": "mediumPosts"
-        },
-        {
-          "source": "/api/verifyTurnstile",
-          "function": "verifyTurnstile"
-        },
-        {
-          "source": "/api/contact-form",
-          "function": "submitContactForm"
-        },
-        {
-          "source": "/api/career-form",
-          "function": "submitCareerForm"
-        },
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ],
-      "headers": [
-        {
-          "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|js|css|eot|otf|ttf|ttc|woff|woff2|font.css)",
-          "headers": [
-            {
-              "key": "Cache-Control",
-              "value": "max-age=604800"
-            }
-          ]
-        },
-        {
-          "source": "/api/**",
-          "headers": [
-            {
-              "key": "Access-Control-Allow-Origin",
-              "value": "*"
-            },
-            {
-              "key": "Access-Control-Allow-Methods",
-              "value": "GET, POST, PUT, DELETE, OPTIONS"
-            },
-            {
-              "key": "Access-Control-Allow-Headers",
-              "value": "Content-Type, Authorization"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "target": "production",
-      "public": "out",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "cleanUrls": true,
-      "trailingSlash": true,
-      "rewrites": [
-        {
-          "source": "/api/mediumPosts",
-          "function": "mediumPosts"
-        },
-        {
-          "source": "/api/verifyTurnstile",
-          "function": "verifyTurnstile"
-        },
-        {
-          "source": "/api/contact-form",
-          "function": "submitContactForm"
-        },
-        {
-          "source": "/api/career-form",
-          "function": "submitCareerForm"
-        },
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ],
-      "headers": [
-        {
-          "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|js|css|eot|otf|ttf|ttc|woff|woff2|font.css)",
-          "headers": [
-            {
-              "key": "Cache-Control",
-              "value": "max-age=604800"
-            }
-          ]
-        },
-        {
-          "source": "/api/**",
-          "headers": [
-            {
-              "key": "Access-Control-Allow-Origin",
-              "value": "*"
-            },
-            {
-              "key": "Access-Control-Allow-Methods",
-              "value": "GET, POST, PUT, DELETE, OPTIONS"
-            },
-            {
-              "key": "Access-Control-Allow-Headers",
-              "value": "Content-Type, Authorization"
-            }
-          ]
-        }
-      ]
-    }
-  ],
+  "hosting": {
+    "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|js|css|woff|woff2|ttf|eot)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(html|json)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=0, must-revalidate"
+          }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false
+  },
   "functions": {
-    "source": "functions"
+    "source": "functions",
+    "runtime": "nodejs20",
+    "region": "asia-south1",
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" run lint"
+    ]
   }
-} 
+}

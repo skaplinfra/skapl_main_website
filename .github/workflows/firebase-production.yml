@@ -1,18 +1,18 @@
-name: Deploy to Firebase Production
+name: Deploy to Firebase Hosting (Production)
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - master
+  workflow_dispatch:
 
 jobs:
-  build_and_deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -23,74 +23,89 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create .env.local for build
+      - name: Create environment file
         run: |
-          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.PROD_NEXT_PUBLIC_SUPABASE_URL }}" >> .env.local
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.PROD_NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.local
-          echo "NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY=${{ secrets.PROD_TURNSTILE_CONTACT_SITE_KEY }}" >> .env.local
-          echo "NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY=${{ secrets.PROD_TURNSTILE_CAREER_SITE_KEY }}" >> .env.local
-          echo "TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.PROD_TURNSTILE_CONTACT_SECRET_KEY }}" >> .env.local
-          echo "TURNSTILE_CAREER_SECRET_KEY=${{ secrets.PROD_TURNSTILE_CAREER_SECRET_KEY }}" >> .env.local
-          echo "NEXT_PUBLIC_STATIC_EXPORT=true" >> .env.local
+          cat << EOF > .env.production
+          NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
+          NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY }}
+          NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY }}
+          NEXT_PUBLIC_SITE_URL=https://skapl-prod.web.app
+          NEXT_PUBLIC_STATIC_EXPORT=true
+          EOF
 
-      - name: Update next.config.js for static export
-        run: |
-          cat > next.config.js << 'EOL'
-          /** @type {import('next').NextConfig} */
-          const nextConfig = {
-            eslint: {
-              ignoreDuringBuilds: true,
-            },
-            images: {
-              domains: [
-                'images.unsplash.com',
-                'media.licdn.com',
-                'cdn-images-1.medium.com',
-                'miro.medium.com'
-              ],
-              unoptimized: true,
-            },
-            output: 'export',
-            distDir: 'out',
-            trailingSlash: false
-          };
-          
-          module.exports = nextConfig;
-          EOL
-
-      - name: Build static site
+      - name: Build Next.js application
         run: npm run build
+        env:
+          NODE_ENV: production
 
-      - name: Install Functions dependencies
+      - name: Setup Firebase Functions
         run: |
           cd functions
-          npm install
+          npm ci
+          cd ..
 
-      - name: Delete obsolete Firebase function
-        uses: w9jds/firebase-action@master
-        with:
-          args: functions:delete nextServer --region us-central1 --force --token "$FIREBASE_TOKEN"
-        continue-on-error: true
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD }}
-          PROJECT_ID: skapl-prod
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      - name: Create Firebase service account file
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > firebase-service-account.json
 
-      - name: Deploy to Firebase Hosting
+      - name: Create Google Cloud service account file
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > gs_key.json
+
+      - name: Prepare Firebase Functions environment
+        run: |
+          cd functions
+          cat << EOF > .env
+          TURNSTILE_CONTACT_SECRET=${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}
+          TURNSTILE_CAREER_SECRET=${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}
+          GOOGLE_CLOUD_PROJECT_ID=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+          GOOGLE_CLOUD_STORAGE_BUCKET=${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}
+          GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SHEET_ID_CRP=${{ secrets.GOOGLE_SHEET_ID_CRP }}
+          KLIAN_CHATBOT_KEY=${{ secrets.KLIAN_CHATBOT_KEY }}
+          EOF
+          cd ..
+
+      - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD }}'
-          projectId: 'skapl-prod'
-          channelId: 'live'
-          target: production
-
-      - name: Deploy Functions to Firebase
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only functions
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}'
+          channelId: live
+          projectId: skapl-prod
         env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD }}
-          PROJECT_ID: skapl-prod
-          TURNSTILE_CONTACT_SECRET: ${{ secrets.PROD_TURNSTILE_CONTACT_SECRET_KEY }}
-          TURNSTILE_CAREER_SECRET: ${{ secrets.PROD_TURNSTILE_CAREER_SECRET_KEY }} 
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
+
+      - name: Deploy Firebase Functions
+        run: |
+          firebase deploy --only functions --force --project skapl-prod
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GOOGLE_APPLICATION_CREDENTIALS: ./gs_key.json
+          GOOGLE_CLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+          GOOGLE_CLOUD_STORAGE_BUCKET: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SHEET_ID_CRP: ${{ secrets.GOOGLE_SHEET_ID_CRP }}
+          KLIAN_CHATBOT_KEY: ${{ secrets.KLIAN_CHATBOT_KEY }}
+          TURNSTILE_CONTACT_SECRET: ${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}
+          TURNSTILE_CAREER_SECRET: ${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}
+
+      - name: Cleanup sensitive files
+        if: always()
+        run: |
+          rm -f firebase-service-account.json
+          rm -f gs_key.json
+          rm -f .env.production
+
+      - name: Deploy success notification
+        if: success()
+        run: |
+          echo "🚀 Deployment successful!"
+          echo "📦 Hosting URL: https://skapl-prod.web.app"
+          echo "⚡ Functions deployed to asia-south1"
