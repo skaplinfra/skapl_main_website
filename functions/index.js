@@ -19,7 +19,8 @@ exports.career = functions.https.onRequest(
   { 
     region: 'us-central1',
     timeoutSeconds: 120,
-    memory: '512MiB'
+    memory: '512MiB',
+    invoker: 'public'
   },
   corsHandler(async (req, res) => {
     // Only allow POST requests
@@ -211,7 +212,8 @@ exports.contact = functions.https.onRequest(
   { 
     region: 'us-central1',
     timeoutSeconds: 60,
-    memory: '256MiB'
+    memory: '256MiB',
+    invoker: 'public'
   },
   corsHandler(async (req, res) => {
     // Only allow POST requests
