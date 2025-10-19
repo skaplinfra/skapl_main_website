@@ -11,6 +11,19 @@ A modern web platform for SKAPL, a high-end energy consulting and project manage
 - 🌙 Dark mode support
 - ⚡ Server-side rendering
 - 📱 Mobile-first approach
+- 📝 Centralized content management using JSON
+
+## Content Management
+
+The website uses a centralized content management approach with a single `CONTENT.json` file that contains all website text and content. This makes it easy to update content across the site without modifying code.
+
+To update website content:
+
+1. Locate the `CONTENT.json` file in the project root
+2. Edit the relevant sections for the pages you want to update
+3. Save the file and deploy the changes
+
+The content file is organized by page sections, making it easy to find and update specific content. No coding knowledge is required to make basic content changes.
 
 ## Tech Stack
 

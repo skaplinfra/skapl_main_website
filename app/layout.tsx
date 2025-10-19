@@ -5,12 +5,15 @@ import { Providers } from './providers';
 import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import Script from 'next/script';
+import content from '@/CONTENT.json';
 
 const inter = Inter({ subsets: ['latin'] });
+const keyPathChatbot = process.env.KLIAN_CHATBOT_KEY;
+
 
 export const metadata: Metadata = {
-  title: 'SKAPL - Building Sustainable Futures',
-  description: 'SKAPL is a leading energy consulting and project management firm specializing in sustainable solutions.',
+  title: `${content.global.companyName} - ${content.global.tagline}`,
+  description: content.footer.description,
   icons: {
     icon: [
       {
@@ -48,7 +51,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SKAPL'
+    title: content.global.companyName
   },
 };
 
@@ -127,6 +130,11 @@ export default function RootLayout({
             <Footer />
           </div>
         </Providers>
+        {/* AI Chatbot Widget */}
+         <Script
+        src={`https://cdn.klain.in/widget/${keyPathChatbot}/embed.js`}
+        strategy="afterInteractive"
+      />
       </body>
     </html>
   );

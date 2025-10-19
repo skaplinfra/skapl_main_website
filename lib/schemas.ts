@@ -19,6 +19,14 @@ export const CareerFormSchema = z.object({
   turnstileToken: z.string().min(1, 'Please complete the security check'),
 });
 
+export interface ContactFormData {
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
+  turnstileToken: string;
+}
+
 // Form data types
-export type ContactFormData = z.infer<typeof ContactFormSchema>;
+//export type ContactFormData = z.infer<typeof ContactFormSchema>;
 export type CareerFormData = z.infer<typeof CareerFormSchema>; 

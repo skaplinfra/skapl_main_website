@@ -14,22 +14,9 @@ import { toast } from 'sonner';
 import { Turnstile } from '@/components/ui/turnstile';
 import { submitCareerApplication } from '@/lib/clientApi';
 import { CareerFormSchema, CareerFormData } from '@/lib/schemas'; // Import schema and type
+import content from '@/CONTENT.json';
 
 type FormData = z.infer<typeof CareerFormSchema>;
-
-const positions = [
-  'Software Engineer',
-  'Project Manager',
-  'Business Analyst',
-  'UI/UX Designer',
-  'DevOps Engineer',
-  'QA Engineer',
-  'Data Scientist',
-  'Software Engineering Intern',
-  'UI/UX Design Intern',
-  'Business Analysis Intern',
-  'Other'
-];
 
 export default function CareersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,6 +26,8 @@ export default function CareersPage() {
   const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm<FormData>({
     resolver: zodResolver(CareerFormSchema),
   });
+  const careerContent = content.careers;
+  const positions = careerContent.positions;
 
   // Set the Turnstile site key after the component mounts
   useEffect(() => {
@@ -59,7 +48,7 @@ export default function CareersPage() {
       // Using client-side API for static export
       await submitCareerApplication(data as CareerFormData, selectedFile);
 
-      toast.success('Application received! We\'ll reach out to you soon.', {
+      toast.success(careerContent.form.successMessage, {
         duration: 5000,
         style: {
           background: 'var(--primary)',
@@ -100,9 +89,9 @@ export default function CareersPage() {
     <div className="min-h-screen bg-background py-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Join Our Team</h1>
+          <h1 className="text-4xl font-bold mb-4">{careerContent.title}</h1>
           <p className="text-xl text-muted-foreground">
-            Be part of our mission to build sustainable futures through innovative energy solutions.
+            {careerContent.subtitle}
           </p>
         </div>
 
@@ -110,7 +99,7 @@ export default function CareersPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <Input
-                placeholder="Your Name"
+                placeholder={careerContent.form.namePlaceholder}
                 {...register('name')}
                 className={errors.name ? 'border-destructive' : ''}
               />
@@ -122,7 +111,7 @@ export default function CareersPage() {
             <div>
               <Input
                 type="email"
-                placeholder="Email Address"
+                placeholder={careerContent.form.emailPlaceholder}
                 {...register('email')}
                 className={errors.email ? 'border-destructive' : ''}
               />
@@ -134,7 +123,7 @@ export default function CareersPage() {
             <div>
               <Input
                 type="tel"
-                placeholder="Phone Number (Optional)"
+                placeholder={careerContent.form.phonePlaceholder}
                 {...register('phone')}
               />
             </div>
@@ -142,7 +131,7 @@ export default function CareersPage() {
             <div>
               <Select onValueChange={(value) => setValue('position_applied', value)}>
                 <SelectTrigger className={errors.position_applied ? 'border-destructive' : ''}>
-                  <SelectValue placeholder="Select Position" />
+                  <SelectValue placeholder={careerContent.form.positionLabel} />
                 </SelectTrigger>
                 <SelectContent>
                   {positions.map((position) => (
@@ -159,7 +148,7 @@ export default function CareersPage() {
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Upload Resume (PDF, DOC, DOCX - Max 5MB)
+                {careerContent.form.resumeLabel}
               </label>
               <div className="flex items-center gap-4">
                 <Button
@@ -187,7 +176,7 @@ export default function CareersPage() {
 
             <div>
               <Textarea
-                placeholder="Cover Letter (Optional)"
+                placeholder={careerContent.form.coverLetterPlaceholder}
                 {...register('cover_letter')}
                 rows={5}
               />
@@ -210,7 +199,7 @@ export default function CareersPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting...' : 'Submit Application'}
+              {isSubmitting ? 'Submitting...' : careerContent.form.buttonText}
             </Button>
           </form>
         </Card>
@@ -223,14 +212,14 @@ export default function CareersPage() {
               <Card key={position} className="p-6">
                 <h3 className="text-xl font-semibold mb-2">{position}</h3>
                 <p className="text-muted-foreground mb-4">
-                  We're looking for talented individuals to join our team and help shape the future of sustainable energy.
+                  {careerContent.positionDetails.description}
                 </p>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>Full Time</span>
+                  <span>{careerContent.positionDetails.type}</span>
                   <span>•</span>
-                  <span>Gujarat, India</span>
+                  <span>{careerContent.positionDetails.location}</span>
                   <span>•</span>
-                  <span>Remote Friendly</span>
+                  <span>{careerContent.positionDetails.remote}</span>
                 </div>
               </Card>
             ))}

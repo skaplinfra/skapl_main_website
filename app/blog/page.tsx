@@ -5,34 +5,49 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Card } from '@/components/ui/card';
-import { ClientMediumPost, fetchMediumPosts } from '@/lib/clientApi';
 import { useTheme } from 'next-themes';
+import { BookOpen, ExternalLink } from 'lucide-react';
+import { fetchSubstackPosts, SubstackPost } from '@/lib/substack';
 
 // Fallback data in case API fails
-const FALLBACK_POSTS: ClientMediumPost[] = [
+const FALLBACK_POSTS: SubstackPost[] = [
   {
-    title: "Renewable Energy: The Path Forward",
-    link: "https://medium.com/@techinfra/renewable-energy-the-path-forward",
+    title: "Welcome to SKAPL Blog",
+    link: "https://skapl.substack.com/",
     pubDate: new Date().toISOString(),
-    content: "Exploring the latest innovations in renewable energy technology and how they're shaping our sustainable future...",
-    author: "SKAPL Team",
-    thumbnail: "https://miro.medium.com/max/1200/1*jFyawcsqoYctkTuZg6wQ1A.jpeg"
+    content: "Discover insights, innovations, and stories from our team at SKAPL...",
+    contentSnippet: "Discover insights, innovations, and stories from our team at SKAPL...",
+    author: "SKAPL",
+    guid: "fallback-1",
+    thumbnail: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80"
   },
   {
-    title: "Smart Solutions for Modern Energy Challenges",
-    link: "https://medium.com/@techinfra/smart-solutions-for-modern-energy-challenges",
+    title: "Innovation and Sustainability",
+    link: "https://skapl.substack.com/",
     pubDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    content: "How AI and data analytics are transforming the way we manage and distribute energy resources...",
-    author: "SKAPL Team",
-    thumbnail: "https://miro.medium.com/max/1200/1*-hQb0rUVucwVHF3k0qU8Yw.jpeg"
+    content: "Exploring the intersection of technology and sustainable solutions...",
+    contentSnippet: "Exploring the intersection of technology and sustainable solutions...",
+    author: "SKAPL",
+    guid: "fallback-2",
+    thumbnail: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&q=80"
+  },
+  {
+    title: "Building for the Future",
+    link: "https://skapl.substack.com/",
+    pubDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    content: "Our journey in creating solutions that matter for tomorrow's challenges...",
+    contentSnippet: "Our journey in creating solutions that matter for tomorrow's challenges...",
+    author: "SKAPL",
+    guid: "fallback-3",
+    thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80"
   }
 ];
 
 export default function BlogPage() {
-  const [posts, setPosts] = useState<ClientMediumPost[]>([]);
+  const [posts, setPosts] = useState<SubstackPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
 
   // Mark as mounted on client side
   useEffect(() => {
@@ -41,12 +56,9 @@ export default function BlogPage() {
 
   // Listen for custom theme change events
   useEffect(() => {
-    const handleThemeChanged = (e: Event) => {
-      // Force a re-render when theme changes
+    const handleThemeChanged = () => {
       setTimeout(() => {
-        // This is just to trigger a re-render
         setMounted(prev => {
-          const newState = !prev;
           setMounted(true);
           return true;
         });
@@ -63,17 +75,15 @@ export default function BlogPage() {
     async function loadPosts() {
       try {
         setLoading(true);
-        const mediumPosts = await fetchMediumPosts();
+        const substackPosts = await fetchSubstackPosts();
         
-        if (mediumPosts.length > 0) {
-          setPosts(mediumPosts);
+        if (substackPosts.length > 0) {
+          setPosts(substackPosts);
         } else {
-          // Use fallback data if no posts were returned
           setPosts(FALLBACK_POSTS);
         }
       } catch (error) {
         console.error('Error loading posts:', error);
-        // Use fallback data if fetch fails
         setPosts(FALLBACK_POSTS);
       } finally {
         setLoading(false);
@@ -88,15 +98,17 @@ export default function BlogPage() {
     return (
       <div className="min-h-screen bg-background py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold mb-4">Our Blog</h1>
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <BookOpen className="w-10 h-10 text-primary" />
+              <h1 className="text-4xl font-bold">SKAPL Blog</h1>
+            </div>
             <p className="text-xl text-muted-foreground">
-              Insights, updates, and stories from the SKAPL team
+              Insights, stories, and updates from our team
             </p>
           </div>
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Loading blog posts...</p>
+            <p className="text-muted-foreground">Loading posts...</p>
           </div>
         </div>
       </div>
@@ -108,31 +120,44 @@ export default function BlogPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold mb-4">Our Blog</h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <BookOpen className="w-10 h-10 text-primary" />
+            <h1 className="text-4xl font-bold">SKAPL Blog</h1>
+          </div>
           <p className="text-xl text-muted-foreground">
-            Insights, updates, and stories from the SKAPL team
+            Insights, stories, and updates from our team
           </p>
+          <Link 
+            href="https://skapl.substack.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 mt-4 text-primary hover:underline"
+          >
+            <BookOpen className="w-5 h-5" />
+            Subscribe to our newsletter
+          </Link>
         </div>
 
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Loading blog posts...</p>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="text-muted-foreground mt-4">Loading posts...</p>
           </div>
         )}
 
         {/* Blog Posts Grid */}
-        {!loading && (
+        {!loading && posts.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post, index) => (
-              <Card key={index} className="overflow-hidden flex flex-col">
+              <Card key={post.guid || index} className="overflow-hidden flex flex-col hover:shadow-lg transition-shadow">
                 <div className="relative h-48">
                   <Image
-                    src={post.thumbnail}
+                    src={post.thumbnail || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80'}
                     alt={post.title}
                     fill
                     className="object-cover"
-                    unoptimized // Since we're using external images
+                    unoptimized
                   />
                 </div>
                 <div className="p-6 flex-1 flex flex-col">
@@ -144,17 +169,18 @@ export default function BlogPage() {
                   <h2 className="text-xl font-semibold mb-3 line-clamp-2">
                     {post.title}
                   </h2>
-                  <p className="text-muted-foreground mb-6 line-clamp-3">
-                    {post.content}
+                  <p className="text-muted-foreground mb-6 line-clamp-3 flex-1">
+                    {post.contentSnippet}
                   </p>
                   <div className="mt-auto">
                     <Link 
                       href={post.link}
                       target="_blank"
                       rel="noopener noreferrer" 
-                      className="text-primary hover:text-primary/80 font-medium"
+                      className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
                     >
-                      Read More →
+                      Read more
+                      <ExternalLink className="w-4 h-4" />
                     </Link>
                   </div>
                 </div>
@@ -165,10 +191,20 @@ export default function BlogPage() {
 
         {!loading && posts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No blog posts found.</p>
+            <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground text-lg">No posts found.</p>
+            <Link 
+              href="https://skapl.substack.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 mt-4 text-primary hover:underline"
+            >
+              Visit our Substack
+              <ExternalLink className="w-4 h-4" />
+            </Link>
           </div>
         )}
       </div>
     </div>
   );
-} 
+}
