@@ -62,8 +62,10 @@ jobs:
         run: |
           cd functions
           cat << EOF > .env
-          TURNSTILE_CONTACT_SECRET=${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}
-          TURNSTILE_CAREER_SECRET=${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}
+          FIREBASE_SERVICE_ACCOUNT_KEY=${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          GOOGLE_SERVICE_ACCOUNT_KEY=${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}
+          TURNSTILE_CAREER_SECRET_KEY=${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}
           GOOGLE_CLOUD_PROJECT_ID=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
           GOOGLE_CLOUD_STORAGE_BUCKET=${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}
           GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}
@@ -72,7 +74,16 @@ jobs:
           EOF
           cd ..
 
-      - name: Deploy to Firebase
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy Functions to Firebase
+        run: firebase deploy --only functions --force --project skapl-prod
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GOOGLE_APPLICATION_CREDENTIALS: gs_key.json
+
+      - name: Deploy Hosting to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -89,6 +100,7 @@ jobs:
           rm -f firebase-service-account.json
           rm -f gs_key.json
           rm -f .env.production
+          rm -f functions/.env
 
       - name: Deploy success notification
         if: success()
