@@ -3,14 +3,34 @@ import { appendToSheet, initializeSheet } from '@/lib/google';
 import { ContactFormData } from '@/lib/schemas';
 
 export async function POST(request: NextRequest) {
+  // Ensure we always return JSON responses
+  const sendJsonResponse = (data: any, status: number = 200) => {
+    return new NextResponse(JSON.stringify(data), {
+      status,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+      },
+    });
+  };
+
   try {
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (jsonError) {
+      console.error('Failed to parse request JSON:', jsonError);
+      return sendJsonResponse(
+        { error: 'Invalid JSON in request body' },
+        400
+      );
+    }
 
     // Validate required fields
     if (!body.name || !body.email || !body.message || !body.turnstileToken) {
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'Missing required fields' },
-        { status: 400 }
+        400
       );
     }
 
@@ -18,9 +38,9 @@ export async function POST(request: NextRequest) {
     const turnstileSecret = process.env.TURNSTILE_CONTACT_SECRET_KEY;
     if (!turnstileSecret) {
       console.error('TURNSTILE_CONTACT_SECRET_KEY not configured');
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'Server configuration error' },
-        { status: 500 }
+        500
       );
     }
 
@@ -38,17 +58,34 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    const turnstileResult = await turnstileResponse.json();
+    let turnstileResult;
+    try {
+      turnstileResult = await turnstileResponse.json();
+    } catch (turnstileJsonError) {
+      console.error('Failed to parse Turnstile response:', turnstileJsonError);
+      return sendJsonResponse(
+        { error: 'Failed to verify captcha' },
+        500
+      );
+    }
 
     if (!turnstileResult.success) {
-      return NextResponse.json(
+      return sendJsonResponse(
         { error: 'Security verification failed' },
-        { status: 403 }
+        403
       );
     }
 
     // Initialize sheet if needed (only on first run)
-    await initializeSheet();
+    try {
+      await initializeSheet();
+    } catch (initError) {
+      console.error('Failed to initialize sheet:', initError);
+      return sendJsonResponse(
+        { error: 'Failed to initialize Google Sheet' },
+        500
+      );
+    }
 
     // Prepare form data
     const formData: ContactFormData = {
@@ -60,17 +97,25 @@ export async function POST(request: NextRequest) {
     };
 
     // Save to Google Sheet
-    await appendToSheet(formData);
+    try {
+      await appendToSheet(formData);
+    } catch (sheetError) {
+      console.error('Failed to append to sheet:', sheetError);
+      return sendJsonResponse(
+        { error: 'Failed to save form data' },
+        500
+      );
+    }
 
-    return NextResponse.json(
+    return sendJsonResponse(
       { success: true, message: 'Form submitted successfully' },
-      { status: 200 }
+      200
     );
   } catch (error) {
     console.error('Error processing contact form:', error);
-    return NextResponse.json(
-      { error: 'Failed to process form submission' },
-      { status: 500 }
+    return sendJsonResponse(
+      { error: error instanceof Error ? error.message : 'Failed to process form submission' },
+      500
     );
   }
 }

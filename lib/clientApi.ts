@@ -89,8 +89,32 @@ export async function submitContactForm(data: ContactFormData) {
       throw new Error(errorMessage);
     }
 
-    const result = await response.json();
-    return result;
+    // Check if response is actually JSON before parsing (same as career form)
+    try {
+      const result = await response.json();
+      return result;
+    } catch (jsonError) {
+      // If JSON parsing fails, it might be HTML or other content
+      console.error('Failed to parse JSON response:', jsonError);
+      
+      // Try to get the response as text to see what we actually received
+      try {
+        const responseClone = response.clone();
+        const textResponse = await responseClone.text();
+        
+        // Check if it's HTML (common error page)
+        if (textResponse.trim().startsWith('<')) {
+          console.error('Received HTML response instead of JSON:', textResponse.substring(0, 200));
+          throw new Error('Server returned HTML error page instead of JSON response');
+        } else {
+          console.error('Response content:', textResponse.substring(0, 200));
+          throw new Error(`Server returned invalid response format: ${textResponse.substring(0, 100)}...`);
+        }
+      } catch (textError) {
+        console.error('Failed to read response body:', textError);
+        throw new Error('Server returned invalid response and could not read error details');
+      }
+    }
   } catch (error) {
     console.error('Error submitting form:', error);
     throw error;
