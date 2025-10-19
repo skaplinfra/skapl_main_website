@@ -82,19 +82,6 @@ jobs:
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
 
-      - name: Deploy Firebase Functions
-        run: |
-          firebase deploy --only functions --force --project skapl-prod
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          GOOGLE_APPLICATION_CREDENTIALS: ./gs_key.json
-          GOOGLE_CLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
-          GOOGLE_CLOUD_STORAGE_BUCKET: ${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}
-          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-          GOOGLE_SHEET_ID_CRP: ${{ secrets.GOOGLE_SHEET_ID_CRP }}
-          KLIAN_CHATBOT_KEY: ${{ secrets.KLIAN_CHATBOT_KEY }}
-          TURNSTILE_CONTACT_SECRET: ${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}
-          TURNSTILE_CAREER_SECRET: ${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}
 
       - name: Cleanup sensitive files
         if: always()
