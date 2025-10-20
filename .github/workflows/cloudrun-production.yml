@@ -67,14 +67,16 @@ jobs:
       - name: Prepare env vars file
         run: |
           cd cloudrun
-          cat > env.yaml <<EOF
-          GCS_BUCKET: "${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}"
-          GSHEET_ID: "${{ secrets.GOOGLE_SHEET_ID }}"
-          GSHEET_ID_CRP: "${{ secrets.GOOGLE_SHEET_ID_CRP }}"
-          TURNSTILE_CONTACT_SECRET_KEY: "${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}"
-          TURNSTILE_CAREER_SECRET_KEY: "${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}"
-          GOOGLE_SERVICE_ACCOUNT_KEY: '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}'
-          EOF
+          # Write env vars, properly escaping the JSON
+          echo "GCS_BUCKET: \"${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}\"" > env.yaml
+          echo "GSHEET_ID: \"${{ secrets.GOOGLE_SHEET_ID }}\"" >> env.yaml
+          echo "GSHEET_ID_CRP: \"${{ secrets.GOOGLE_SHEET_ID_CRP }}\"" >> env.yaml
+          echo "TURNSTILE_CONTACT_SECRET_KEY: \"${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}\"" >> env.yaml
+          echo "TURNSTILE_CAREER_SECRET_KEY: \"${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}\"" >> env.yaml
+          # Base64 encode the service account to avoid YAML parsing issues
+          echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' | base64 | tr -d '\n' > sa_key_b64.txt
+          echo "GOOGLE_SERVICE_ACCOUNT_KEY_B64: \"$(cat sa_key_b64.txt)\"" >> env.yaml
+          rm sa_key_b64.txt
 
       - name: Deploy to Cloud Run
         run: |
