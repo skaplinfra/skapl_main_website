@@ -77,12 +77,12 @@ jobs:
         run: |
           cd cloudrun
           gcloud run deploy forms-api \
-            --image gcr.io/skapl-prod/forms-api \
+            --image gcr.io/skapl-main-website/forms-api \
             --platform managed \
             --region us-central1 \
             --allow-unauthenticated \
             --env-vars-file env.yaml \
-            --project skapl-prod \
+            --project skapl-main-website \
             --max-instances 10 \
             --memory 512Mi \
             --timeout 120s \
@@ -113,7 +113,7 @@ jobs:
 
       - name: Test Cloud Run Service (no traffic yet)
         run: |
-          SERVICE_URL=$(gcloud run services describe forms-api --region us-central1 --format="value(status.url)" --project skapl-prod)
+          SERVICE_URL=$(gcloud run services describe forms-api --region us-central1 --format="value(status.url)" --project skapl-main-website)
           echo "🧪 Testing Cloud Run service at: $SERVICE_URL"
           
           # Test health endpoint
@@ -131,7 +131,7 @@ jobs:
           gcloud run services update-traffic forms-api \
             --to-latest \
             --region us-central1 \
-            --project skapl-prod
+            --project skapl-main-website
 
       - name: Deploy success notification
         if: success()
@@ -139,7 +139,7 @@ jobs:
           echo "🚀 Deployment successful!"
           echo "📦 Hosting URL: https://skapl-prod.web.app"
           echo "⚡ Cloud Run Service: forms-api"
-          SERVICE_URL=$(gcloud run services describe forms-api --region us-central1 --format="value(status.url)" --project skapl-prod)
+          SERVICE_URL=$(gcloud run services describe forms-api --region us-central1 --format="value(status.url)" --project skapl-main-website)
           echo "🔗 API URL: $SERVICE_URL"
           echo "✅ All systems operational!"
 
