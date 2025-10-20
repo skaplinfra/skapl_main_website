@@ -5,6 +5,7 @@ export const ContactFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   phone: z.string().optional(),
+  company: z.string().optional(),
   message: z.string().min(10, 'Please provide more details'),
   turnstileToken: z.string().min(1, 'Please complete the security check'),
 });
@@ -23,6 +24,7 @@ export interface ContactFormData {
   name: string;
   email: string;
   phone?: string;
+  company?: string;
   message: string;
   turnstileToken: string;
 }
