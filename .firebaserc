@@ -1,14 +1,11 @@
 {
   "projects": {
-    "default": "skapl-demo",
+    "default": "skapl-prod",
     "production": "skapl-prod"
   },
   "targets": {
-    "skapl-demo": {
+    "skapl-prod": {
       "hosting": {
-        "demo": [
-          "skapl-demo"
-        ],
         "production": [
           "skapl-prod"
         ]

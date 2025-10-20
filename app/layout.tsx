@@ -8,7 +8,6 @@ import Script from 'next/script';
 import content from '@/CONTENT.json';
 
 const inter = Inter({ subsets: ['latin'] });
-const keyPathChatbot = process.env.KLIAN_CHATBOT_KEY;
 
 
 export const metadata: Metadata = {
@@ -132,7 +131,7 @@ export default function RootLayout({
         </Providers>
         {/* AI Chatbot Widget */}
          <Script
-        src={`https://cdn.klain.in/widget/${keyPathChatbot}/embed.js`}
+        src="https://cdn.klain.in/widget/68ec5a25963d7d16b0ebb8f4_1760320195288/embed.js"
         strategy="afterInteractive"
       />
       </body>

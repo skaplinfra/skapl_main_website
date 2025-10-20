@@ -3,10 +3,10 @@ name: Deploy to Firebase Production
 on:
   push:
     branches:
-      - main
+      - demo
   pull_request:
     branches:
-      - main
+      - demo
 
 jobs:
   build_and_deploy:
@@ -25,8 +25,6 @@ jobs:
 
       - name: Create .env.local for build
         run: |
-          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.PROD_NEXT_PUBLIC_SUPABASE_URL }}" >> .env.local
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.PROD_NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.local
           echo "NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY=${{ secrets.PROD_TURNSTILE_CONTACT_SITE_KEY }}" >> .env.local
           echo "NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY=${{ secrets.PROD_TURNSTILE_CAREER_SITE_KEY }}" >> .env.local
           echo "TURNSTILE_CONTACT_SECRET_KEY=${{ secrets.PROD_TURNSTILE_CONTACT_SECRET_KEY }}" >> .env.local
@@ -65,6 +63,15 @@ jobs:
         run: |
           cd functions
           npm install
+      
+      - name: Create Functions .env file
+        run: |
+          cd functions
+          echo "TURNSTILE_CONTACT_SECRET=${{ secrets.PROD_TURNSTILE_CONTACT_SECRET_KEY }}" > .env
+          echo "TURNSTILE_CAREER_SECRET=${{ secrets.PROD_TURNSTILE_CAREER_SECRET_KEY }}" >> .env
+          echo "GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}" >> .env
+          echo "GOOGLE_SHEET_ID_CRP=${{ secrets.GOOGLE_SHEET_ID_CRP }}" >> .env
+          echo 'GOOGLE_SERVICE_ACCOUNT_KEY=${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' >> .env
 
       - name: Delete obsolete Firebase function
         uses: w9jds/firebase-action@master
@@ -88,9 +95,7 @@ jobs:
       - name: Deploy Functions to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only functions
+          args: deploy --only functions --force
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKAPL_PROD }}
-          PROJECT_ID: skapl-prod
-          TURNSTILE_CONTACT_SECRET: ${{ secrets.PROD_TURNSTILE_CONTACT_SECRET_KEY }}
-          TURNSTILE_CAREER_SECRET: ${{ secrets.PROD_TURNSTILE_CAREER_SECRET_KEY }} 
+          PROJECT_ID: skapl-prod 
