@@ -88,8 +88,7 @@ jobs:
             --project skapl-main-website \
             --max-instances 10 \
             --memory 512Mi \
-            --timeout 120s \
-            --no-traffic
+            --timeout 120s
           
           # Clean up
           rm env.yaml
@@ -114,27 +113,18 @@ jobs:
           rm -f .env.production
           rm -f cloudrun/env.yaml
 
-      - name: Test Cloud Run Service (no traffic yet)
+      - name: Test Cloud Run Service
         run: |
           SERVICE_URL=$(gcloud run services describe forms-api --region us-central1 --format="value(status.url)" --project skapl-main-website)
           echo "🧪 Testing Cloud Run service at: $SERVICE_URL"
           
           # Test health endpoint
           if curl -f -s "$SERVICE_URL/health" | grep -q "healthy"; then
-            echo "✅ Health check passed!"
+            echo "✅ Health check passed! Service is live!"
           else
             echo "❌ Health check failed!"
             exit 1
           fi
-
-      - name: Route traffic to new revision
-        if: success()
-        run: |
-          echo "✅ Tests passed! Routing traffic to new revision..."
-          gcloud run services update-traffic forms-api \
-            --to-latest \
-            --region us-central1 \
-            --project skapl-main-website
 
       - name: Deploy success notification
         if: success()
