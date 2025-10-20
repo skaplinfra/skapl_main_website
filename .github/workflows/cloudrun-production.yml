@@ -53,13 +53,16 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # Build and Deploy Cloud Run Service
+      # Configure Docker for GCR
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
+
+      # Build and Deploy Cloud Run Service (using Docker directly, no Cloud Build)
       - name: Build and Push Docker Image
         run: |
           cd cloudrun
-          gcloud builds submit \
-            --tag gcr.io/skapl-prod/forms-api \
-            --project skapl-prod
+          docker build -t gcr.io/skapl-main-website/forms-api:latest .
+          docker push gcr.io/skapl-main-website/forms-api:latest
 
       - name: Prepare env vars file
         run: |
@@ -77,7 +80,7 @@ jobs:
         run: |
           cd cloudrun
           gcloud run deploy forms-api \
-            --image gcr.io/skapl-main-website/forms-api \
+            --image gcr.io/skapl-main-website/forms-api:latest \
             --platform managed \
             --region us-central1 \
             --allow-unauthenticated \
