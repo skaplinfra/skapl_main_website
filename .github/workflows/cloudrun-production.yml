@@ -1,0 +1,145 @@
+name: Deploy to Cloud Run & Firebase Hosting
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create environment file
+        run: |
+          cat << EOF > .env.production
+          NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
+          NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_CONTACT_SITE_KEY }}
+          NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_CAREER_SITE_KEY }}
+          NEXT_PUBLIC_SITE_URL=https://skapl-prod.web.app
+          NEXT_PUBLIC_STATIC_EXPORT=true
+          EOF
+
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      # Authenticate with Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # Build and Deploy Cloud Run Service
+      - name: Build and Push Docker Image
+        run: |
+          cd cloudrun
+          gcloud builds submit \
+            --tag gcr.io/skapl-prod/forms-api \
+            --project skapl-prod
+
+      - name: Prepare env vars file
+        run: |
+          cd cloudrun
+          cat > env.yaml <<EOF
+          GCS_BUCKET: "${{ secrets.GOOGLE_CLOUD_STORAGE_BUCKET }}"
+          GSHEET_ID: "${{ secrets.GOOGLE_SHEET_ID }}"
+          GSHEET_ID_CRP: "${{ secrets.GOOGLE_SHEET_ID_CRP }}"
+          TURNSTILE_CONTACT_SECRET_KEY: "${{ secrets.TURNSTILE_CONTACT_SECRET_KEY }}"
+          TURNSTILE_CAREER_SECRET_KEY: "${{ secrets.TURNSTILE_CAREER_SECRET_KEY }}"
+          GOOGLE_SERVICE_ACCOUNT_KEY: '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}'
+          EOF
+
+      - name: Deploy to Cloud Run
+        run: |
+          cd cloudrun
+          gcloud run deploy forms-api \
+            --image gcr.io/skapl-prod/forms-api \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --env-vars-file env.yaml \
+            --project skapl-prod \
+            --max-instances 10 \
+            --memory 512Mi \
+            --timeout 120s \
+            --no-traffic
+          
+          # Clean up
+          rm env.yaml
+
+      # Deploy Firebase Hosting
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy Hosting to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}'
+          channelId: live
+          projectId: skapl-prod
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
+
+      - name: Cleanup sensitive files
+        if: always()
+        run: |
+          rm -f .env.production
+          rm -f cloudrun/env.yaml
+
+      - name: Test Cloud Run Service (no traffic yet)
+        run: |
+          SERVICE_URL=$(gcloud run services describe forms-api --region us-central1 --format="value(status.url)" --project skapl-prod)
+          echo "🧪 Testing Cloud Run service at: $SERVICE_URL"
+          
+          # Test health endpoint
+          if curl -f -s "$SERVICE_URL/health" | grep -q "healthy"; then
+            echo "✅ Health check passed!"
+          else
+            echo "❌ Health check failed!"
+            exit 1
+          fi
+
+      - name: Route traffic to new revision
+        if: success()
+        run: |
+          echo "✅ Tests passed! Routing traffic to new revision..."
+          gcloud run services update-traffic forms-api \
+            --to-latest \
+            --region us-central1 \
+            --project skapl-prod
+
+      - name: Deploy success notification
+        if: success()
+        run: |
+          echo "🚀 Deployment successful!"
+          echo "📦 Hosting URL: https://skapl-prod.web.app"
+          echo "⚡ Cloud Run Service: forms-api"
+          SERVICE_URL=$(gcloud run services describe forms-api --region us-central1 --format="value(status.url)" --project skapl-prod)
+          echo "🔗 API URL: $SERVICE_URL"
+          echo "✅ All systems operational!"
+

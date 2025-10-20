@@ -1,0 +1,11 @@
+*.md
+.git
+.gitignore
+env.yaml
+*.sh
+__pycache__
+*.pyc
+.env
+.venv
+venv/
+

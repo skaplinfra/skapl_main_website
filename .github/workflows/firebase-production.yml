@@ -1,10 +1,10 @@
-name: Deploy to Firebase Hosting (Production)
+name: Deploy to Firebase Hosting (Production) - DISABLED
+
+# This workflow is disabled in favor of Cloud Run deployment
+# See: .github/workflows/cloudrun-production.yml
 
 on:
-  push:
-    branches:
-      - master
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only
 
 jobs:
   build-and-deploy:

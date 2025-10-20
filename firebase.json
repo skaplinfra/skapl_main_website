@@ -28,12 +28,11 @@
     ],
     "rewrites": [
       {
-        "source": "/api/career",
-        "function": "career"
-      },
-      {
-        "source": "/api/contact",
-        "function": "contact"
+        "source": "/api/**",
+        "run": {
+          "serviceId": "forms-api",
+          "region": "us-central1"
+        }
       },
       {
         "source": "**",
@@ -42,20 +41,5 @@
     ],
     "cleanUrls": true,
     "trailingSlash": false
-  },
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "default",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint"
-      ]
-    }
-  ]
+  }
 }

@@ -50,16 +50,26 @@ export async function verifyTurnstileToken(token: string, formType: 'contact' | 
 }
 
 /**
- * Submits a contact form directly to Supabase or simulates for static site
+ * Submits a contact form to Cloud Run API
  */
 export async function submitContactForm(data: ContactFormData) {
   try {
+    // Convert to FormData to match FastAPI backend expectations
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('email', data.email);
+    if (data.phone) {
+      formData.append('phone', data.phone);
+    }
+    if (data.company) {
+      formData.append('company', data.company);
+    }
+    formData.append('message', data.message);
+    formData.append('turnstileToken', data.turnstileToken);
+
     const response = await fetch('/api/contact', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
+      body: formData,  // Send as FormData, not JSON
     });
 
     if (!response.ok) {
@@ -124,13 +134,13 @@ export async function submitContactForm(data: ContactFormData) {
 }
 
 /**
- * Submits a career application directly to Supabase or simulates for static site
+ * Submits a career application to Cloud Run API with resume upload
  */
 export const submitCareerApplication = async (
   formData: CareerFormData,
   resumeFile: File
 ): Promise<void> => {
-  // Create FormData for file upload
+  // Create FormData for file upload (matches FastAPI Form() expectations)
   const uploadFormData = new FormData();
   uploadFormData.append('name', formData.name);
   uploadFormData.append('email', formData.email);
