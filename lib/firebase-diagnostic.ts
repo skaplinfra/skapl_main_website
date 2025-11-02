@@ -3,6 +3,17 @@ import { getAdminApp } from './firebase-admin';
 import { getFirestore } from 'firebase-admin/firestore';
 
 export async function diagnoseFirebase() {
+  // Skip diagnostic during static export/build (no credentials available)
+  if (process.env.NEXT_PUBLIC_STATIC_EXPORT === 'true' || process.env.NODE_ENV === 'production') {
+    // Check if we're in a build context
+    if (typeof window === 'undefined' && !process.env.FIREBASE_SERVICE_ACCOUNT_PATH && !process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      console.log('=== Firebase Diagnostic Check ===\n');
+      console.log('⚠️  Skipping diagnostic - running in build/static export mode');
+      console.log('   Diagnostics are only available at runtime with service account credentials\n');
+      return;
+    }
+  }
+
   console.log('=== Firebase Diagnostic Check ===\n');
   
   try {
