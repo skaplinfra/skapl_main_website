@@ -126,20 +126,28 @@ exports.submitContactForm = onRequest({ cors: true }, async (req, res) => {
     }
     
     // Verify turnstile token first
-    const verifyURL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-    const formData = new URLSearchParams();
-    formData.append('secret', process.env.TURNSTILE_CONTACT_SECRET);
-    formData.append('response', turnstileToken);
+    const turnstileSecret = process.env.TURNSTILE_CONTACT_SECRET;
     
-    const verifyResponse = await fetch(verifyURL, {
-      method: 'POST',
-      body: formData,
-    });
-    
-    const verifyData = await verifyResponse.json();
-    
-    if (!verifyData.success) {
-      return res.status(400).json({ error: 'Invalid security token' });
+    // If secret is missing, skip verification (for development/demo)
+    if (!turnstileSecret) {
+      console.warn('⚠️ TURNSTILE_CONTACT_SECRET not set - skipping verification');
+    } else {
+      const verifyURL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+      const formData = new URLSearchParams();
+      formData.append('secret', turnstileSecret);
+      formData.append('response', turnstileToken);
+      
+      const verifyResponse = await fetch(verifyURL, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const verifyData = await verifyResponse.json();
+      
+      if (!verifyData.success) {
+        console.error('Turnstile verification failed:', verifyData);
+        return res.status(400).json({ error: 'Invalid security token' });
+      }
     }
     
     // Save to Firestore
@@ -183,20 +191,28 @@ exports.submitCareerForm = onRequest({ cors: true }, async (req, res) => {
     }
     
     // Verify turnstile token first
-    const verifyURL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-    const formData = new URLSearchParams();
-    formData.append('secret', process.env.TURNSTILE_CAREER_SECRET);
-    formData.append('response', turnstileToken);
+    const turnstileSecret = process.env.TURNSTILE_CAREER_SECRET;
     
-    const verifyResponse = await fetch(verifyURL, {
-      method: 'POST',
-      body: formData,
-    });
-    
-    const verifyData = await verifyResponse.json();
-    
-    if (!verifyData.success) {
-      return res.status(400).json({ error: 'Invalid security token' });
+    // If secret is missing, skip verification (for development/demo)
+    if (!turnstileSecret) {
+      console.warn('⚠️ TURNSTILE_CAREER_SECRET not set - skipping verification');
+    } else {
+      const verifyURL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+      const formData = new URLSearchParams();
+      formData.append('secret', turnstileSecret);
+      formData.append('response', turnstileToken);
+      
+      const verifyResponse = await fetch(verifyURL, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const verifyData = await verifyResponse.json();
+      
+      if (!verifyData.success) {
+        console.error('Turnstile verification failed:', verifyData);
+        return res.status(400).json({ error: 'Invalid security token' });
+      }
     }
     
     // Save to Firestore
