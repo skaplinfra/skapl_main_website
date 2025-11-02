@@ -54,13 +54,19 @@ export async function verifyTurnstileToken(token: string, formType: 'contact' | 
  */
 export async function submitContactForm(data: ContactFormData) {
   try {
-    const response = await fetch('/api/contact', {
+    const response = await fetch('/api/contact-form', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
     });
+
+    // Check if response is HTML (404 page)
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      throw new Error('API endpoint not found. Please check Firebase Functions deployment.');
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -96,13 +102,19 @@ export const submitCareerApplication = async (
   uploadFormData.append('turnstileToken', formData.turnstileToken);
   uploadFormData.append('resume', resumeFile);
 
-  const response = await fetch('/api/career', {
+  const response = await fetch('/api/career-form', {
     method: 'POST',
     body: uploadFormData,
   });
 
+  // Check if response is HTML (404 page)
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('text/html')) {
+    throw new Error('API endpoint not found. Please check Firebase Functions deployment.');
+  }
+
   if (!response.ok) {
-    const error = await response.json();
+    const error = await response.json().catch(() => ({ error: 'Failed to submit application' }));
     throw new Error(error.error || 'Failed to submit application');
   }
 
