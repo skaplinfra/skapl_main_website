@@ -1,10 +1,16 @@
-// Load environment variables
+// Load environment variables (for local development)
 require('dotenv').config();
 
 const { onRequest } = require('firebase-functions/v2/https');
+const { defineSecret } = require('firebase-functions/params');
 const Parser = require('rss-parser');
 const fetch = require('node-fetch');
 const admin = require('./admin');
+
+// Define secrets for Functions v2 (for production)
+// These will be set via: firebase functions:secrets:set TURNSTILE_CONTACT_SECRET
+const turnstileContactSecret = defineSecret('TURNSTILE_CONTACT_SECRET');
+const turnstileCareerSecret = defineSecret('TURNSTILE_CAREER_SECRET');
 
 const MEDIUM_FEED_URL = 'https://medium.com/feed/@techinfra';
 
@@ -113,7 +119,10 @@ exports.verifyTurnstile = onRequest({ cors: true }, async (req, res) => {
 });
 
 // Function to handle contact form submissions
-exports.submitContactForm = onRequest({ cors: true }, async (req, res) => {
+exports.submitContactForm = onRequest({
+  cors: true,
+  secrets: [turnstileContactSecret], // Reference the secret
+}, async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -126,11 +135,18 @@ exports.submitContactForm = onRequest({ cors: true }, async (req, res) => {
     }
     
     // Verify turnstile token first
-    const turnstileSecret = process.env.TURNSTILE_CONTACT_SECRET;
+    // Try secret from Functions v2 secrets first, then fallback to env var (for local dev)
+    let turnstileSecret;
+    try {
+      turnstileSecret = turnstileContactSecret.value();
+    } catch (error) {
+      // Secret not set, try env var
+      turnstileSecret = process.env.TURNSTILE_CONTACT_SECRET;
+    }
     
     // If secret is missing, skip verification (for development/demo)
-    if (!turnstileSecret) {
-      console.warn('⚠️ TURNSTILE_CONTACT_SECRET not set - skipping verification');
+    if (!turnstileSecret || turnstileSecret.trim() === '') {
+      console.warn('TURNSTILE_CONTACT_SECRET not set - skipping verification');
     } else {
       const verifyURL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
       const formData = new URLSearchParams();
@@ -175,7 +191,10 @@ exports.submitContactForm = onRequest({ cors: true }, async (req, res) => {
 });
 
 // Function to handle career form submissions
-exports.submitCareerForm = onRequest({ cors: true }, async (req, res) => {
+exports.submitCareerForm = onRequest({
+  cors: true,
+  secrets: [turnstileCareerSecret], // Reference the secret
+}, async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -191,11 +210,18 @@ exports.submitCareerForm = onRequest({ cors: true }, async (req, res) => {
     }
     
     // Verify turnstile token first
-    const turnstileSecret = process.env.TURNSTILE_CAREER_SECRET;
+    // Try secret from Functions v2 secrets first, then fallback to env var (for local dev)
+    let turnstileSecret;
+    try {
+      turnstileSecret = turnstileCareerSecret.value();
+    } catch (error) {
+      // Secret not set, try env var
+      turnstileSecret = process.env.TURNSTILE_CAREER_SECRET;
+    }
     
     // If secret is missing, skip verification (for development/demo)
-    if (!turnstileSecret) {
-      console.warn('⚠️ TURNSTILE_CAREER_SECRET not set - skipping verification');
+    if (!turnstileSecret || turnstileSecret.trim() === '') {
+      console.warn('TURNSTILE_CAREER_SECRET not set - skipping verification');
     } else {
       const verifyURL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
       const formData = new URLSearchParams();
