@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Rules for resumes folder
+    match /resumes/{resumeFile} {
+      // Allow anyone to upload resumes (for career form submission)
+      // File size limit: 5MB
+      // Allowed types: PDF, DOC, DOCX
+      allow create: if request.auth == null 
+        && request.resource.size < 5 * 1024 * 1024
+        && (request.resource.contentType == 'application/pdf' 
+            || request.resource.contentType == 'application/msword'
+            || request.resource.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      
+      // Only authenticated admin users can read or delete
+      allow read, delete: if request.auth != null;
+    }
+    
+    // Deny all other access by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

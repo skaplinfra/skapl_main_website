@@ -5,8 +5,6 @@ const { onRequest } = require('firebase-functions/v2/https');
 const Parser = require('rss-parser');
 const fetch = require('node-fetch');
 const admin = require('./admin');
-const { createClient } = require('@supabase/supabase-js');
-const { appendContactToSheet, appendCareerToSheet } = require('./googleSheets');
 
 const MEDIUM_FEED_URL = 'https://medium.com/feed/@techinfra';
 
@@ -144,36 +142,23 @@ exports.submitContactForm = onRequest({ cors: true }, async (req, res) => {
       return res.status(400).json({ error: 'Invalid security token' });
     }
     
-    // Initialize Supabase client
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_KEY
-    );
+    // Save to Firestore
+    const db = admin.firestore();
+    const docRef = await db.collection('contact_submissions').add({
+      name,
+      email,
+      phone: phone || '',
+      message,
+      submitted_at: admin.firestore.FieldValue.serverTimestamp(),
+      created_at: new Date().toISOString(),
+    });
     
-    // Insert data into Supabase
-    const { data, error } = await supabase
-      .from('contact_submissions')
-      .insert([
-        {
-          name,
-          email,
-          phone: phone || null,
-          message
-        }
-      ])
-      .select()
-      .single();
+    console.log('Contact form saved to Firestore:', docRef.id);
     
-    if (error) {
-      console.error('Supabase error:', error);
-      return res.status(500).json({ error: 'Database error' });
-    }
-    
-    // Also save to Google Sheets (non-blocking)
-    appendContactToSheet({ name, email, phone, message })
-      .catch(err => console.error('Google Sheets error (non-critical):', err));
-    
-    return res.status(200).json({ success: true, data });
+    return res.status(200).json({ 
+      success: true, 
+      data: { id: docRef.id, name, email, phone, message } 
+    });
     
   } catch (error) {
     console.error('Contact form submission error:', error);
@@ -188,8 +173,9 @@ exports.submitCareerForm = onRequest({ cors: true }, async (req, res) => {
   }
 
   try {
-    // We need to handle multipart form data for file uploads
-    // For simplicity, we'll accept JSON for now and add file upload later
+    // Note: This Firebase Function doesn't handle file uploads directly
+    // The Next.js API route at /api/career handles the actual file upload
+    // This function is kept for backwards compatibility with static exports
     const { name, email, phone, position_applied, cover_letter, turnstileToken } = req.body;
     
     if (!name || !email || !position_applied || !turnstileToken) {
@@ -213,41 +199,33 @@ exports.submitCareerForm = onRequest({ cors: true }, async (req, res) => {
       return res.status(400).json({ error: 'Invalid security token' });
     }
     
-    // Initialize Supabase client
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_KEY
-    );
+    // Save to Firestore
+    const db = admin.firestore();
+    const docRef = await db.collection('career_applications').add({
+      name,
+      email,
+      phone: phone || '',
+      position_applied,
+      cover_letter: cover_letter || '',
+      resume_url: '', // Will be updated by client if file is uploaded
+      resume_filename: '',
+      submitted_at: admin.firestore.FieldValue.serverTimestamp(),
+      created_at: new Date().toISOString(),
+    });
     
-    // For now, create a mock resume URL (in a real implementation, we'd upload the file)
-    const resumeUrl = `https://example.com/mock-resume-${Date.now()}.pdf`;
+    console.log('Career application saved to Firestore:', docRef.id);
     
-    // Insert data into Supabase
-    const { data, error } = await supabase
-      .from('career_applications')
-      .insert([
-        {
-          name,
-          email,
-          phone: phone || null,
-          position_applied,
-          cover_letter: cover_letter || null,
-          resume_url: resumeUrl
-        }
-      ])
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Supabase error:', error);
-      return res.status(500).json({ error: 'Database error' });
-    }
-    
-    // Also save to Google Sheets (non-blocking)
-    appendCareerToSheet({ name, email, phone, position_applied, cover_letter }, resumeUrl)
-      .catch(err => console.error('Google Sheets error (non-critical):', err));
-    
-    return res.status(200).json({ success: true, data });
+    return res.status(200).json({ 
+      success: true, 
+      data: { 
+        id: docRef.id, 
+        name, 
+        email, 
+        phone, 
+        position_applied, 
+        cover_letter 
+      } 
+    });
     
   } catch (error) {
     console.error('Career form submission error:', error);

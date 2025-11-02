@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CareerFormSchema } from '@/lib/schemas';
-import { submitToGoogleSheets, verifyTurnstile, initializeSheet } from '@/lib/sheets';
-import { uploadToCloudStorage } from '@/lib/storage';
+import { uploadToFirebaseStorage } from '@/lib/storage';
+import { getAdminFirestore } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,12 +26,78 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify Turnstile token
-    const isValidToken = await verifyTurnstile(turnstileToken);
-    if (!isValidToken) {
-      return NextResponse.json(
-        { error: 'Invalid captcha verification' },
-        { status: 400 }
-      );
+    const turnstileSecret = process.env.TURNSTILE_CAREER_SECRET_KEY;
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    console.log('Verifying Turnstile token...');
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Turnstile secret configured:', !!turnstileSecret);
+    console.log('Token received:', !!turnstileToken);
+    
+    if (!turnstileSecret) {
+      console.warn('TURNSTILE_CAREER_SECRET_KEY not configured');
+      
+      // In development, allow bypass if secret is not configured
+      if (isDevelopment) {
+        console.warn('Development mode: Bypassing Turnstile verification');
+      } else {
+        return NextResponse.json(
+          { error: 'Server configuration error' },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Verify with Cloudflare
+      try {
+        const turnstileResponse = await fetch(
+          'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              secret: turnstileSecret,
+              response: turnstileToken,
+            }),
+          }
+        );
+
+        const turnstileResult = await turnstileResponse.json();
+        
+        console.log('Turnstile verification result:', {
+          success: turnstileResult.success,
+          'error-codes': turnstileResult['error-codes'],
+        });
+
+        if (!turnstileResult.success) {
+          console.error('Turnstile verification failed:', turnstileResult);
+          
+          // In development, show more details
+          if (isDevelopment) {
+            console.warn('Development mode: Proceeding despite Turnstile failure');
+            console.warn('Error codes:', turnstileResult['error-codes']);
+          } else {
+            return NextResponse.json(
+              { error: 'Security verification failed', details: turnstileResult['error-codes'] },
+              { status: 403 }
+            );
+          }
+        } else {
+          console.log('Turnstile verification successful');
+        }
+      } catch (verifyError) {
+        console.error('Error verifying Turnstile:', verifyError);
+        
+        if (isDevelopment) {
+          console.warn('Development mode: Bypassing Turnstile due to error');
+        } else {
+          return NextResponse.json(
+            { error: 'Security verification error' },
+            { status: 500 }
+          );
+        }
+      }
     }
 
     // Validate form data with Zod schema
@@ -68,9 +135,9 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await resumeFile.arrayBuffer();
     const resumeBuffer = Buffer.from(arrayBuffer);
 
-    // Upload resume to Google Cloud Storage
-    console.log('Uploading resume to Cloud Storage...');
-    const resumeUrl = await uploadToCloudStorage(
+    // Upload resume to Firebase Storage
+    console.log('Uploading resume to Firebase Storage...');
+    const resumeUrl = await uploadToFirebaseStorage(
       resumeBuffer,
       resumeFile.name,
       resumeFile.type,
@@ -78,13 +145,21 @@ export async function POST(request: NextRequest) {
     );
     console.log('Resume uploaded successfully:', resumeUrl);
 
-    // Initialize sheet if needed (first time setup)
-    await initializeSheet();
-
-    // Submit to Google Sheets
-    console.log('Submitting to Google Sheets...');
-    await submitToGoogleSheets(validatedData, resumeUrl);
-    console.log('Sheet submission successful');
+    // Save to Firestore
+    console.log('Saving career application to Firestore...');
+    const db = getAdminFirestore();
+    await db.collection('career_applications').add({
+      name: validatedData.name,
+      email: validatedData.email,
+      phone: validatedData.phone || '',
+      position_applied: validatedData.position_applied,
+      cover_letter: validatedData.cover_letter || '',
+      resume_url: resumeUrl,
+      resume_filename: resumeFile.name,
+      submitted_at: FieldValue.serverTimestamp(),
+      created_at: new Date().toISOString(),
+    });
+    console.log('Application saved to Firestore successfully');
 
     return NextResponse.json({
       success: true,

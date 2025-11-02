@@ -62,3 +62,7 @@ gs_keys.json
 ./gs_keys.json
 gs_key.json
 ./gs_key.json
+
+# Firebase service account keys
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
