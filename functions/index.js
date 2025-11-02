@@ -161,9 +161,13 @@ exports.submitContactForm = onRequest({
       const verifyData = await verifyResponse.json();
       
       if (!verifyData.success) {
-        console.error('Turnstile verification failed:', verifyData);
+        console.error('Turnstile verification failed:', JSON.stringify(verifyData));
+        console.error('Token received:', turnstileToken ? 'Present' : 'Missing');
+        console.error('Secret used:', turnstileSecret ? 'Present' : 'Missing');
         return res.status(400).json({ error: 'Invalid security token' });
       }
+      
+      console.log('Turnstile verification successful');
     }
     
     // Save to Firestore
@@ -236,9 +240,13 @@ exports.submitCareerForm = onRequest({
       const verifyData = await verifyResponse.json();
       
       if (!verifyData.success) {
-        console.error('Turnstile verification failed:', verifyData);
+        console.error('Turnstile verification failed:', JSON.stringify(verifyData));
+        console.error('Token received:', turnstileToken ? 'Present' : 'Missing');
+        console.error('Secret used:', turnstileSecret ? 'Present' : 'Missing');
         return res.status(400).json({ error: 'Invalid security token' });
       }
+      
+      console.log('Turnstile verification successful');
     }
     
     // Save to Firestore
